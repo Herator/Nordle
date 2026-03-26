@@ -63,8 +63,8 @@ h1 {
   display: grid;
   grid-template-rows: repeat(6, 1fr);
   gap: min(5px, 0.6vh);
-  flex: 1; 
-  min-height: 0; 
+  flex: 1;
+  min-height: 0;
   width: 100%;
   max-width: 350px;
   margin: 0 auto;

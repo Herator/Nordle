@@ -35,6 +35,12 @@ let currentRow = 0;
 let gameOver = false;
 const MAX_ROWS = 6;
 
+// Player identity (set after Discord auth)
+let playerId = null;
+let playerUsername = null;
+let playerAvatar = null;
+let playerChannelId = null;
+
 function showMessage(text, type) {
   const msg = document.getElementById('message');
   msg.textContent = text;
@@ -72,7 +78,6 @@ function applyResults(row, results) {
     const letter = word[i];
     const keyBtn = document.querySelector(`#keyboard button[data-key="${letter}"]`);
     if (keyBtn) {
-      // Only upgrade colors: absent -> present -> correct
       setTimeout(() => {
         if (results[i] === 'correct') {
           keyBtn.className = 'correct';
@@ -84,6 +89,31 @@ function applyResults(row, results) {
       }, delay + 250);
     }
   });
+}
+
+// Instantly apply color classes to a row (no animation) — used for state restore
+function applyResultsInstant(row, word, results) {
+  const inputs = document.querySelectorAll(`#row-${row} input`);
+  inputs.forEach((input, i) => {
+    input.value = word[i] || '';
+    input.classList.add(results[i]);
+    input.disabled = true;
+  });
+
+  // Update keyboard colors immediately
+  for (let i = 0; i < word.length; i++) {
+    const letter = word[i];
+    const keyBtn = document.querySelector(`#keyboard button[data-key="${letter}"]`);
+    if (keyBtn) {
+      if (results[i] === 'correct') {
+        keyBtn.className = 'correct';
+      } else if (results[i] === 'present' && !keyBtn.classList.contains('correct')) {
+        keyBtn.className = 'present';
+      } else if (results[i] === 'absent' && !keyBtn.classList.contains('correct') && !keyBtn.classList.contains('present')) {
+        keyBtn.className = 'absent';
+      }
+    }
+  }
 }
 
 function submitGuess() {
@@ -104,8 +134,14 @@ function submitGuess() {
   applyResults(currentRow, results);
 
   const revealTime = 5 * 300 + 300;
+  const won = results.every(r => r === 'correct');
+  const thisRow = currentRow;
+  const done = won || thisRow + 1 >= MAX_ROWS;
 
-  if (results.every(r => r === 'correct')) {
+  // Report progress to server (which posts/updates Discord channel chat)
+  reportProgress(guess, results, done, won);
+
+  if (won) {
     setTimeout(() => {
       const messages = ['Fantastisk!', 'Imponerende!', 'Flott!', 'Bra!', 'Nesten!', 'Puh!'];
       showMessage(messages[currentRow] || 'Du vant!', 'win');
@@ -123,7 +159,6 @@ function submitGuess() {
     return;
   }
 
-  // Enable next row
   setTimeout(() => {
     const nextInputs = document.querySelectorAll(`#row-${currentRow} input`);
     nextInputs.forEach(input => input.disabled = false);
@@ -141,7 +176,6 @@ function handleKeyPress(key) {
 
   if (key === 'Backspace') {
     const inputs = Array.from(document.querySelectorAll(`#row-${currentRow} input`));
-    // Find last filled input
     for (let i = inputs.length - 1; i >= 0; i--) {
       if (inputs[i].value !== '') {
         inputs[i].value = '';
@@ -152,14 +186,12 @@ function handleKeyPress(key) {
     return;
   }
 
-  // Letter input
   if (/^[a-zæøå]$/i.test(key)) {
     const inputs = Array.from(document.querySelectorAll(`#row-${currentRow} input`));
     const emptyInput = inputs.find(i => i.value === '');
     if (emptyInput) {
       emptyInput.value = key.toLowerCase();
       emptyInput.classList.add('filled');
-      // Focus next empty or stay on last
       const nextEmpty = inputs.find(i => i.value === '');
       if (nextEmpty) nextEmpty.focus();
       else emptyInput.focus();
@@ -168,7 +200,6 @@ function handleKeyPress(key) {
 }
 
 function setupInputHandlers() {
-  // Physical keyboard
   document.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const key = e.key;
@@ -178,20 +209,14 @@ function setupInputHandlers() {
     }
   });
 
-  // On-screen keyboard
   document.querySelectorAll('#keyboard button').forEach(btn => {
     btn.addEventListener('click', () => {
       handleKeyPress(btn.dataset.key);
     });
   });
 
-  // Prevent direct typing in inputs (we handle it via keydown)
   document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('input', (e) => {
-      // Allow our programmatic changes but block direct typing
-    });
     input.addEventListener('focus', () => {
-      // Only allow focus on current row
       const row = parseInt(input.dataset.row);
       if (row !== currentRow) {
         const currentInputs = document.querySelectorAll(`#row-${currentRow} input`);
@@ -203,19 +228,83 @@ function setupInputHandlers() {
   });
 }
 
-// Initialize
+// ---- Server communication ----
+
+function reportProgress(word, results, done, won) {
+  if (!playerId) return;
+  fetch('/api/progress', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId: playerId,
+      username: playerUsername,
+      avatar: playerAvatar,
+      channelId: playerChannelId,
+      word,
+      results,
+      done,
+      won,
+    }),
+  }).catch(e => console.log('Progress report failed:', e.message));
+}
+
+async function fetchAndRestoreState() {
+  if (!playerId) return;
+  try {
+    const res = await fetch(`/api/state?userId=${encodeURIComponent(playerId)}`);
+    const state = await res.json();
+    if (!state || !state.rows || state.rows.length === 0) return;
+
+    // Restore all previously played rows
+    for (let r = 0; r < state.rows.length; r++) {
+      const { word, results } = state.rows[r];
+      applyResultsInstant(r, word, results);
+      currentRow = r + 1;
+    }
+
+    if (state.done) {
+      gameOver = true;
+      if (state.won) {
+        showMessage('Du vant allerede i dag!', 'win');
+      } else {
+        showMessage(`Ordet var: ${getSecretWord().toUpperCase()}`, 'lose');
+      }
+    } else {
+      // Enable the current (next) row
+      const nextInputs = document.querySelectorAll(`#row-${currentRow} input`);
+      nextInputs.forEach(input => input.disabled = false);
+      // Focus handled after this function returns
+    }
+  } catch (e) {
+    console.log('State restore failed:', e.message);
+  }
+}
+
+// ---- Initialize ----
 async function start() {
   try {
     await setupDiscordSdk();
     console.log("Discord SDK is authenticated");
+    playerId = auth.user.id;
+    playerUsername = auth.user.username;
+    playerAvatar = auth.user.avatar;
+    try { playerChannelId = discordSdk.channelId; } catch {}
   } catch (e) {
     console.log("Discord SDK setup failed (running outside Discord?):", e.message);
   }
 
   await initGame();
+
+  // Restore today's saved progress before setting up input handlers
+  await fetchAndRestoreState();
+
   setupInputHandlers();
-  document.querySelector('#row-0 input').focus();
-  showMessage('Gjett ordet!', '');
+
+  if (!gameOver) {
+    const firstInput = document.querySelector(`#row-${currentRow} input:not([disabled])`);
+    if (firstInput) firstInput.focus();
+    if (currentRow === 0) showMessage('Gjett ordet!', '');
+  }
 }
 
 start();
