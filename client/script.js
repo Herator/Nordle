@@ -1,31 +1,69 @@
-const fs = require('fs');
+let wordList = [];
+let wordSet = null;
+let secretWord = '';
 
-let csvCache = null;
-
-export function checkWord(guess, secret) {
-    // Logic to compare guess vs secret
-    return result; 
+export async function initGame() {
+  await loadWordList();
+  secretWord = getDailyWord();
+  console.log('Game initialized, word list size:', wordList.length);
 }
 
-function initializeCache(filePath) {
-  if (csvCache) return; // Don't reload if it's already there
+function getDailyWord() {
+  // Use the date to pick a consistent word for the day
+  const today = new Date();
+  const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
 
-  console.log("Loading CSV into memory...");
-  const content = fs.readFileSync(filePath, 'utf8');
-  
-  // Split by commas and newlines, then trim whitespace
-  const words = content.split(/[,\n\r]+/).map(w => w.trim());
-  
-  // A Set provides O(1) lookup time
-  csvCache = new Set(words);
-  console.log("Cache ready.");
-}
-
-function hasWord(word) {
-  if (!csvCache) {
-    throw new Error("Cache not initialized! Run initializeCache() first.");
+  // Simple hash from the date string to get a stable index
+  let hash = 0;
+  for (let i = 0; i < dateString.length; i++) {
+    hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
+    hash |= 0;
   }
-  return csvCache.has(word);
+
+  return wordList[Math.abs(hash) % wordList.length];
 }
 
-initializeCache('data.csv');
+async function loadWordList() {
+  const response = await fetch('/ord.csv');
+  const text = await response.text();
+  wordList = text
+    .split(/[\r\n]+/)
+    .map(w => w.trim().toLowerCase())
+    .filter(w => w.length === 5);
+  wordSet = new Set(wordList);
+}
+
+export function isValidWord(word) {
+  return wordSet && wordSet.has(word.toLowerCase());
+}
+
+export function checkWord(guess) {
+  const g = guess.toLowerCase().split('');
+  const s = secretWord.split('');
+  const result = Array(5).fill('absent');
+
+  // First pass: mark correct (green)
+  const secretRemaining = [...s];
+  for (let i = 0; i < 5; i++) {
+    if (g[i] === s[i]) {
+      result[i] = 'correct';
+      secretRemaining[i] = null;
+    }
+  }
+
+  // Second pass: mark present (yellow)
+  for (let i = 0; i < 5; i++) {
+    if (result[i] === 'correct') continue;
+    const idx = secretRemaining.indexOf(g[i]);
+    if (idx !== -1) {
+      result[i] = 'present';
+      secretRemaining[idx] = null;
+    }
+  }
+
+  return result;
+}
+
+export function getSecretWord() {
+  return secretWord;
+}

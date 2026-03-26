@@ -1,123 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="no">
 <head>
     <meta charset="UTF-8">
-    <title>Discord Wordle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nordle</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container">
-      <h1>Nerdle</h1>
+      <h1>Nordle</h1>
+      <div id="message"></div>
 
-      <div class="grid">
-        <!-- Row 1 (Starting Row) -->
+      <div class="grid" id="grid">
+        <!-- Row 0 (Starting Row) -->
         <div class="row" id="row-0">
-          <input type="text" maxlength="1" autofocus>
-          <input type="text" maxlength="1">
-          <input type="text" maxlength="1">
-          <input type="text" maxlength="1">
-          <input type="text" maxlength="1">
+          <input type="text" maxlength="1" data-row="0" data-col="0">
+          <input type="text" maxlength="1" data-row="0" data-col="1">
+          <input type="text" maxlength="1" data-row="0" data-col="2">
+          <input type="text" maxlength="1" data-row="0" data-col="3">
+          <input type="text" maxlength="1" data-row="0" data-col="4">
+        </div>
+        <!-- Row 1 -->
+        <div class="row" id="row-1">
+          <input type="text" maxlength="1" data-row="1" data-col="0" disabled>
+          <input type="text" maxlength="1" data-row="1" data-col="1" disabled>
+          <input type="text" maxlength="1" data-row="1" data-col="2" disabled>
+          <input type="text" maxlength="1" data-row="1" data-col="3" disabled>
+          <input type="text" maxlength="1" data-row="1" data-col="4" disabled>
         </div>
         <!-- Row 2 -->
-        <div class="row" id="row-1">
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
+        <div class="row" id="row-2">
+          <input type="text" maxlength="1" data-row="2" data-col="0" disabled>
+          <input type="text" maxlength="1" data-row="2" data-col="1" disabled>
+          <input type="text" maxlength="1" data-row="2" data-col="2" disabled>
+          <input type="text" maxlength="1" data-row="2" data-col="3" disabled>
+          <input type="text" maxlength="1" data-row="2" data-col="4" disabled>
         </div>
         <!-- Row 3 -->
-        <div class="row" id="row-2">
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
+        <div class="row" id="row-3">
+          <input type="text" maxlength="1" data-row="3" data-col="0" disabled>
+          <input type="text" maxlength="1" data-row="3" data-col="1" disabled>
+          <input type="text" maxlength="1" data-row="3" data-col="2" disabled>
+          <input type="text" maxlength="1" data-row="3" data-col="3" disabled>
+          <input type="text" maxlength="1" data-row="3" data-col="4" disabled>
         </div>
         <!-- Row 4 -->
-        <div class="row" id="row-3">
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
+        <div class="row" id="row-4">
+          <input type="text" maxlength="1" data-row="4" data-col="0" disabled>
+          <input type="text" maxlength="1" data-row="4" data-col="1" disabled>
+          <input type="text" maxlength="1" data-row="4" data-col="2" disabled>
+          <input type="text" maxlength="1" data-row="4" data-col="3" disabled>
+          <input type="text" maxlength="1" data-row="4" data-col="4" disabled>
         </div>
         <!-- Row 5 -->
-        <div class="row" id="row-4">
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-        </div>
-        <!-- Row 6 -->
         <div class="row" id="row-5">
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
-          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" data-row="5" data-col="0" disabled>
+          <input type="text" maxlength="1" data-row="5" data-col="1" disabled>
+          <input type="text" maxlength="1" data-row="5" data-col="2" disabled>
+          <input type="text" maxlength="1" data-row="5" data-col="3" disabled>
+          <input type="text" maxlength="1" data-row="5" data-col="4" disabled>
         </div>
       </div>
 
-
-        <div id="keyboard"></div>
+      <div id="keyboard">
+        <div class="keyboard-row">
+          <button data-key="q">Q</button>
+          <button data-key="w">W</button>
+          <button data-key="e">E</button>
+          <button data-key="r">R</button>
+          <button data-key="t">T</button>
+          <button data-key="y">Y</button>
+          <button data-key="u">U</button>
+          <button data-key="i">I</button>
+          <button data-key="o">O</button>
+          <button data-key="p">P</button>
+          <button data-key="å">Å</button>
+        </div>
+        <div class="keyboard-row">
+          <button data-key="a">A</button>
+          <button data-key="s">S</button>
+          <button data-key="d">D</button>
+          <button data-key="f">F</button>
+          <button data-key="g">G</button>
+          <button data-key="h">H</button>
+          <button data-key="j">J</button>
+          <button data-key="k">K</button>
+          <button data-key="l">L</button>
+          <button data-key="ø">Ø</button>
+          <button data-key="æ">Æ</button>
+        </div>
+        <div class="keyboard-row">
+          <button data-key="Enter" class="key-wide">ENTER</button>
+          <button data-key="z">Z</button>
+          <button data-key="x">X</button>
+          <button data-key="c">C</button>
+          <button data-key="v">V</button>
+          <button data-key="b">B</button>
+          <button data-key="n">N</button>
+          <button data-key="m">M</button>
+          <button data-key="Backspace" class="key-wide">&#9003;</button>
+        </div>
+      </div>
     </div>
 
-    <script src="script.js"></script>
-    <script src="main.js"></script>
-    <script >
-      let currentRow = 0;
-
-      // Listen for typing (to move cursor forward)
-      document.querySelectorAll('input').forEach((input, index) => {
-        input.addEventListener('input', (e) => {
-          if (e.target.value.length === 1) {
-            // Find the next input in the same row
-            const next = e.target.nextElementSibling;
-            if (next) next.focus();
-          }
-        });
-
-        // Listen for Backspace (to move cursor back)
-        input.addEventListener('keydown', (e) => {
-          if (e.key === "Backspace" && e.target.value === "") {
-            const prev = e.target.previousElementSibling;
-            if (prev) prev.focus();
-          }
-          
-          // Listen for Enter (to lock row and move down)
-          if (e.key === "Enter") {
-            lockAndMoveDown();
-          }
-        });
-      });
-
-      function lockAndMoveDown() {
-        const currentInputs = document.querySelectorAll(`#row-${currentRow} input`);
-        
-        // Check if current row is full
-        let isFull = true;
-        currentInputs.forEach(input => { if(input.value === "") isFull = false; });
-
-        if (isFull && currentRow < 5) {
-          // 1. Lock the current row
-          currentInputs.forEach(input => input.disabled = true);
-          
-          // 2. Move to next row
-          currentRow++;
-          
-          // 3. Unlock and focus next row
-          const nextInputs = document.querySelectorAll(`#row-${currentRow} input`);
-          nextInputs.forEach(input => input.disabled = false);
-          nextInputs[0].focus();
-        } else if (!isFull) {
-          alert("Please fill all 5 boxes before pressing Enter");
-        } else {
-          alert("Last row reached!");
-        }
-      }
-      document.querySelector('#row-0 input').focus();
-    </script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
