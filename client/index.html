@@ -7,12 +7,117 @@
 </head>
 <body>
     <div id="game-container">
-        <h1>Nerdle</h1>
-        <div id="board"></div>
+      <h1>Nerdle</h1>
+
+      <div class="grid">
+        <!-- Row 1 (Starting Row) -->
+        <div class="row" id="row-0">
+          <input type="text" maxlength="1" autofocus>
+          <input type="text" maxlength="1">
+          <input type="text" maxlength="1">
+          <input type="text" maxlength="1">
+          <input type="text" maxlength="1">
+        </div>
+        <!-- Row 2 -->
+        <div class="row" id="row-1">
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+        </div>
+        <!-- Row 3 -->
+        <div class="row" id="row-2">
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+        </div>
+        <!-- Row 4 -->
+        <div class="row" id="row-3">
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+        </div>
+        <!-- Row 5 -->
+        <div class="row" id="row-4">
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+        </div>
+        <!-- Row 6 -->
+        <div class="row" id="row-5">
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+          <input type="text" maxlength="1" disabled>
+        </div>
+      </div>
+
+
         <div id="keyboard"></div>
     </div>
 
     <script src="script.js"></script>
     <script src="main.js"></script>
+    <script >
+      let currentRow = 0;
+
+      // Listen for typing (to move cursor forward)
+      document.querySelectorAll('input').forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+          if (e.target.value.length === 1) {
+            // Find the next input in the same row
+            const next = e.target.nextElementSibling;
+            if (next) next.focus();
+          }
+        });
+
+        // Listen for Backspace (to move cursor back)
+        input.addEventListener('keydown', (e) => {
+          if (e.key === "Backspace" && e.target.value === "") {
+            const prev = e.target.previousElementSibling;
+            if (prev) prev.focus();
+          }
+          
+          // Listen for Enter (to lock row and move down)
+          if (e.key === "Enter") {
+            lockAndMoveDown();
+          }
+        });
+      });
+
+      function lockAndMoveDown() {
+        const currentInputs = document.querySelectorAll(`#row-${currentRow} input`);
+        
+        // Check if current row is full
+        let isFull = true;
+        currentInputs.forEach(input => { if(input.value === "") isFull = false; });
+
+        if (isFull && currentRow < 5) {
+          // 1. Lock the current row
+          currentInputs.forEach(input => input.disabled = true);
+          
+          // 2. Move to next row
+          currentRow++;
+          
+          // 3. Unlock and focus next row
+          const nextInputs = document.querySelectorAll(`#row-${currentRow} input`);
+          nextInputs.forEach(input => input.disabled = false);
+          nextInputs[0].focus();
+        } else if (!isFull) {
+          alert("Please fill all 5 boxes before pressing Enter");
+        } else {
+          alert("Last row reached!");
+        }
+      }
+      document.querySelector('#row-0 input').focus();
+    </script>
 </body>
 </html>
