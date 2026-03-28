@@ -21,6 +21,9 @@ export default defineConfig({
   ],
   server: {
     allowedHosts: true,
+    headers: {
+      "Content-Security-Policy": "frame-ancestors *",
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
