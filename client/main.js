@@ -3,9 +3,13 @@ import { initGame, checkWord, isValidWord, getSecretWord, setSecretWord } from "
 import "./style.css";
 
 let auth;
-const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
 
 async function setupDiscordSdk() {
+  const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID;
+  if (!clientId) throw new Error('No Discord client ID configured');
+
+  const discordSdk = new DiscordSDK(clientId);
+
   const readyTimeout = new Promise((_, reject) =>
     setTimeout(() => reject(new Error('Discord SDK ready timeout')), 10000)
   );
@@ -13,7 +17,7 @@ async function setupDiscordSdk() {
   console.log("Discord SDK is ready");
 
   const { code } = await discordSdk.commands.authorize({
-    client_id: import.meta.env.VITE_DISCORD_CLIENT_ID,
+    client_id: clientId,
     response_type: "code",
     state: "",
     prompt: "none",
