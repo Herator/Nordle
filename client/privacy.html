@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nordle – Personvernerklæring</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        html, body {
+            overflow: auto;
+            height: auto;
+        }
+        body {
+            align-items: flex-start;
+            padding: 2rem 1rem;
+        }
+        .legal-container {
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .legal-container h1 {
+            font-size: clamp(1.4em, 4vh, 2em);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.25rem;
+        }
+        .legal-container .updated {
+            font-size: 0.8em;
+            color: #818384;
+            margin-bottom: 2rem;
+        }
+        .legal-container h2 {
+            font-size: 1em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6aaa64;
+            margin: 1.75rem 0 0.5rem;
+        }
+        .legal-container p {
+            font-size: 0.9em;
+            line-height: 1.7;
+            color: #d7dadc;
+        }
+        .legal-container ul {
+            font-size: 0.9em;
+            line-height: 1.7;
+            color: #d7dadc;
+            padding-left: 1.5rem;
+            margin-top: 0.25rem;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 2.5rem;
+            font-size: 0.85em;
+            color: #818384;
+            text-decoration: none;
+            border-bottom: 1px solid #3a3a3c;
+            padding-bottom: 2px;
+        }
+        .back-link:hover {
+            color: #ffffff;
+            border-color: #565758;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid #3a3a3c;
+            margin: 2rem 0 0;
+        }
+        .highlight-box {
+            background-color: #1a1a1b;
+            border-left: 3px solid #538d4e;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .highlight-box p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="legal-container">
+        <h1>Nordle</h1>
+        <h2 style="margin-top:0; font-size:1.3em; color:#ffffff; text-transform:none; letter-spacing:0;">Personvernerklæring</h2>
+        <p class="updated">Sist oppdatert: 28. mars 2026</p>
+
+        <div class="highlight-box">
+            <p>Nordle samler inn svært lite data. Vi lagrer kun spilltilstand knyttet til din Discord-bruker-ID for å gi deg en sømløs spillopplevelse.</p>
+        </div>
+
+        <h2>1. Hvem er vi</h2>
+        <p>Nordle er en Discord-aktivitet utviklet og driftet av Nordle-teamet. Denne erklæringen beskriver hvilke data vi samler inn, hvordan de brukes og hvilke rettigheter du har.</p>
+
+        <h2>2. Data vi samler inn</h2>
+        <p>Vi samler kun inn følgende data:</p>
+        <ul>
+            <li><strong>Discord-bruker-ID</strong> – brukes til å lagre og hente din spilltilstand (nåværende rad og gjett).</li>
+            <li><strong>Spilltilstand</strong> – gjeldende rad og gyldige gjett for dagens ord, lagret midlertidig i serverminnet.</li>
+        </ul>
+        <p>Vi samler <em>ikke</em> inn navn, e-postadresser, meldinger, betalingsinformasjon eller annen personlig informasjon.</p>
+
+        <h2>3. Hvordan vi bruker dataene</h2>
+        <p>Dataene brukes utelukkende til å:</p>
+        <ul>
+            <li>Gjenopprette din spilltilstand dersom du forlater og returnerer til spillet samme dag.</li>
+            <li>Sørge for at gjett registreres korrekt i flerspillersessioner.</li>
+        </ul>
+
+        <h2>4. Lagring og sletting</h2>
+        <p>Spilltilstand lagres midlertidig i serverminnet og tilbakestilles automatisk daglig når et nytt ord velges. Vi benytter ingen vedvarende database for brukerdata.</p>
+
+        <h2>5. Deling med tredjeparter</h2>
+        <p>Vi deler ikke dine data med tredjeparter. Appen kjører via Discord sin plattform, og Discords egen personvernerklæring gjelder for data Discord behandler på sine servere.</p>
+
+        <h2>6. Dine rettigheter</h2>
+        <p>I henhold til GDPR og norsk personvernlovgivning har du rett til:</p>
+        <ul>
+            <li>Innsyn i hvilke data vi har lagret om deg.</li>
+            <li>Sletting av dine data (siden data er knyttet til bruker-ID og slettes daglig, er dette ivaretatt automatisk).</li>
+            <li>Å klage til Datatilsynet dersom du mener databehandlingen er i strid med regelverket.</li>
+        </ul>
+
+        <h2>7. Informasjonskapsler (cookies)</h2>
+        <p>Nordle bruker ingen informasjonskapsler.</p>
+
+        <h2>8. Endringer i personvernerklæringen</h2>
+        <p>Vi kan oppdatere denne erklæringen fra tid til annen. Den sist oppdaterte datoen vises øverst på siden. Fortsatt bruk av Appen etter oppdateringer utgjør aksept av den reviderte erklæringen.</p>
+
+        <h2>9. Kontakt</h2>
+        <p>Har du spørsmål om personvern eller ønsker innsyn i dine data, kan du kontakte oss via GitHub-repositoriet for Nordle.</p>
+
+        <hr class="divider">
+        <a class="back-link" href="/">&larr; Tilbake til spillet</a>
+    </div>
+</body>
+</html>

@@ -190,3 +190,23 @@ input.flip {
 #keyboard button.absent {
   background-color: #3a3a3c;
 }
+
+/* Legal footer */
+#legal-footer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0 4px;
+  flex-shrink: 0;
+  font-size: 0.7em;
+  color: #565758;
+}
+
+#legal-footer a {
+  color: #565758;
+  text-decoration: none;
+}
+
+#legal-footer a:hover {
+  color: #818384;
+}
