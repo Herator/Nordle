@@ -12,10 +12,37 @@ html, body {
 body {
   display: flex;
   justify-content: center;
-  background-color: #111113;
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  color: #ffffff;
+  /* Gradient from banner: soft pink → muted lavender → mint teal */
+  background: linear-gradient(135deg, #cfa8c2 0%, #adbdd4 50%, #8dcab8 100%);
+  font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
+  color: #2a1e38;
 }
+
+/* ---- Background star decorations ---- */
+
+.bg-stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-stars .star {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 1.4rem;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Position each star individually */
+.bg-stars .star:nth-child(1) { top:  7%;  left:  7%;  font-size: 1.6rem; opacity: 0.45; }
+.bg-stars .star:nth-child(2) { top: 14%;  right: 11%; font-size: 1.0rem; opacity: 0.38; }
+.bg-stars .star:nth-child(3) { top: 48%;  left:  3%;  font-size: 0.75rem; opacity: 0.32; }
+.bg-stars .star:nth-child(4) { top: 32%;  right:  4%; font-size: 0.7rem;  opacity: 0.30; }
+.bg-stars .star:nth-child(5) { bottom: 22%; left: 14%; font-size: 1.3rem; opacity: 0.42; }
+.bg-stars .star:nth-child(6) { bottom:  8%; right:  7%; font-size: 1.9rem; opacity: 0.38; }
+.bg-stars .star:nth-child(7) { bottom: 38%; right: 17%; font-size: 0.85rem; opacity: 0.30; }
 
 /* ---- Players sidebar ---- */
 
@@ -27,12 +54,15 @@ body {
   width: 190px;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #222224;
+  background: rgba(255, 255, 255, 0.18);
+  border-right: 1px solid rgba(255, 255, 255, 0.35);
   padding: 14px 10px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #3a3a3c transparent;
+  scrollbar-color: rgba(255,255,255,0.3) transparent;
   z-index: 10;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 #players-sidebar-title {
@@ -40,10 +70,10 @@ body {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #565758;
+  color: rgba(42, 30, 56, 0.55);
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #222224;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
 }
 
 .player-card {
@@ -51,13 +81,13 @@ body {
   flex-direction: column;
   gap: 6px;
   padding: 8px 6px;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-bottom: 4px;
   transition: background-color 0.15s;
 }
 
 .player-card:hover {
-  background-color: #1c1c1e;
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 .player-info {
@@ -78,14 +108,14 @@ body {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background-color: #3a3a3c;
+  background: rgba(255, 255, 255, 0.4);
   flex-shrink: 0;
 }
 
 .player-name {
   font-size: 0.75em;
   font-weight: 600;
-  color: #cccccc;
+  color: #2a1e38;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -108,14 +138,16 @@ body {
   border-radius: 2px;
 }
 
-.mini-tile.correct  { background-color: #538d4e; }
-.mini-tile.present  { background-color: #b59f3b; }
-.mini-tile.absent   { background-color: #3a3a3c; }
-.mini-tile.empty    { background-color: #1c1c1e; border: 1px solid #2a2a2c; }
+.mini-tile.correct { background-color: #4a9e68; }
+.mini-tile.present { background-color: #c9a035; }
+.mini-tile.absent  { background-color: rgba(42, 30, 56, 0.28); }
+.mini-tile.empty   { background-color: rgba(255, 255, 255, 0.3); border: 1px solid rgba(255,255,255,0.5); }
 
 /* ---- Main game container ---- */
 
 #game-container {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -131,16 +163,17 @@ body {
   width: 100%;
   text-align: center;
   padding: 10px 0 12px;
-  border-bottom: 1px solid #222224;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.45);
   flex-shrink: 0;
-  margin-bottom: 0;
 }
 
 h1 {
-  font-size: clamp(1.2em, 4vh, 2em);
+  font-size: clamp(1.4em, 4.5vh, 2.2em);
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
+  color: #ffffff;
+  text-shadow: 0 1px 8px rgba(42, 30, 56, 0.2);
 }
 
 /* ---- Message ---- */
@@ -153,13 +186,13 @@ h1 {
   justify-content: center;
   font-size: clamp(0.75em, 1.8vh, 1em);
   font-weight: 600;
-  color: #ffffff;
+  color: #2a1e38;
   flex-shrink: 0;
 }
 
-#message.error { color: #ff6b6b; }
-#message.win   { color: #6aaa64; }
-#message.lose  { color: #ff6b6b; }
+#message.error { color: #b83058; }
+#message.win   { color: #2e7a50; }
+#message.lose  { color: #b83058; }
 
 /* ---- Grid ---- */
 
@@ -203,19 +236,20 @@ input {
   text-align: center;
   font-size: clamp(1em, 3.5vh, 2em);
   font-weight: 700;
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
   text-transform: uppercase;
-  border: 2px solid #333335;
-  border-radius: 4px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
   outline: none;
-  background-color: #111113;
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.25);
+  color: #2a1e38;
   caret-color: transparent;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, background 0.15s;
 }
 
 input:focus {
-  border-color: #6e6e70;
+  border-color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.4);
 }
 
 input:disabled {
@@ -224,7 +258,8 @@ input:disabled {
 }
 
 input.filled {
-  border-color: #6e6e70;
+  border-color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.45);
   animation: pop 0.08s ease;
 }
 
@@ -235,9 +270,21 @@ input.filled {
 }
 
 /* Tile colors */
-input.correct { background-color: #538d4e; border-color: #538d4e; }
-input.present { background-color: #b59f3b; border-color: #b59f3b; }
-input.absent  { background-color: #3a3a3c; border-color: #3a3a3c; }
+input.correct {
+  background-color: #4a9e68;
+  border-color: #4a9e68;
+  color: #ffffff;
+}
+input.present {
+  background-color: #c9a035;
+  border-color: #c9a035;
+  color: #ffffff;
+}
+input.absent {
+  background-color: rgba(42, 30, 56, 0.35);
+  border-color: rgba(42, 30, 56, 0.25);
+  color: rgba(255, 255, 255, 0.75);
+}
 
 /* Flip animation */
 input.flip {
@@ -275,22 +322,22 @@ input.flip {
   max-width: 40px;
   height: clamp(36px, 5.5vh, 50px);
   border: none;
-  border-radius: 6px;
-  background-color: #818384;
-  color: #ffffff;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  color: #2a1e38;
   font-size: clamp(0.65em, 1.5vh, 0.85em);
   font-weight: 700;
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
   cursor: pointer;
   text-transform: uppercase;
-  transition: background-color 0.15s, transform 0.08s, opacity 0.15s;
+  transition: background 0.15s, transform 0.08s, opacity 0.15s;
   padding: 0 2px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 0 rgba(42, 30, 56, 0.15);
   user-select: none;
 }
 
 #keyboard button:hover {
-  opacity: 0.88;
+  background: rgba(255, 255, 255, 0.7);
   transform: translateY(-1px);
 }
 
@@ -305,9 +352,18 @@ input.flip {
   font-size: clamp(0.55em, 1.3vh, 0.75em);
 }
 
-#keyboard button.correct { background-color: #538d4e; }
-#keyboard button.present { background-color: #b59f3b; }
-#keyboard button.absent  { background-color: #3a3a3c; }
+#keyboard button.correct {
+  background-color: #4a9e68;
+  color: #ffffff;
+}
+#keyboard button.present {
+  background-color: #c9a035;
+  color: #ffffff;
+}
+#keyboard button.absent {
+  background: rgba(42, 30, 56, 0.35);
+  color: rgba(255, 255, 255, 0.8);
+}
 
 /* ---- Legal footer ---- */
 
@@ -318,15 +374,15 @@ input.flip {
   padding: 6px 0 4px;
   flex-shrink: 0;
   font-size: 0.68em;
-  color: #3a3a3c;
+  color: rgba(42, 30, 56, 0.45);
 }
 
 #legal-footer a {
-  color: #3a3a3c;
+  color: rgba(42, 30, 56, 0.45);
   text-decoration: none;
   transition: color 0.15s;
 }
 
 #legal-footer a:hover {
-  color: #818384;
+  color: rgba(42, 30, 56, 0.75);
 }
