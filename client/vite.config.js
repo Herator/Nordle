@@ -21,6 +21,10 @@ export default defineConfig({
   ],
   server: {
     allowedHosts: true,
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

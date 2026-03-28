@@ -6,7 +6,10 @@ let auth;
 const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
 
 async function setupDiscordSdk() {
-  await discordSdk.ready();
+  const readyTimeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Discord SDK ready timeout')), 10000)
+  );
+  await Promise.race([discordSdk.ready(), readyTimeout]);
   console.log("Discord SDK is ready");
 
   const { code } = await discordSdk.commands.authorize({
