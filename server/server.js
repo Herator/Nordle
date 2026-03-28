@@ -275,7 +275,258 @@ app.post("/api/progress", async (req, res) => {
   res.json({ ok: true });
 });
 
+// ---- Challenge mode ----
+// Lobbies are keyed by guildId+channelId so everyone in the same Discord
+// voice channel shares a lobby automatically.
+//
+// Lobby shape:
+// {
+//   id, masterId, masterUsername,
+//   players: Map<userId, { username, avatar, online, joinedAt }>,
+//   rounds: number, currentRound: number (0-indexed),
+//   started: boolean, finished: boolean,
+//   words: string[],          // one word per round, chosen at start
+//   roundResults: [           // index = round number
+//     Map<userId, { guesses, timeMs, done, won, submittedAt }>
+//   ],
+//   totalScores: Map<userId, number>,  // cumulative (lower = better)
+// }
+
+const lobbies = new Map(); // key = `${guildId}:${channelId}`
+
+function lobbyKey(guildId, channelId) {
+  return `${guildId ?? 'noguild'}:${channelId ?? 'nochannel'}`;
+}
+
+// Scoring: 1 guess = 1pt, ..., 6 guesses = 6pt, DNF = 7pt
+function calcScore(guesses, won) {
+  return won ? guesses : 7;
+}
+
+// Pick `n` random words from the daily word list (loaded from file at startup)
+let challengeWordPool = [];
+async function loadChallengeWords() {
+  try {
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const { fileURLToPath } = await import('url');
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const txt = await fs.readFile(
+      path.join(__dirname, '../client/public/daglige-ord.txt'), 'utf8'
+    );
+    challengeWordPool = txt.split(/[\r\n]+/).map(w => w.trim().toLowerCase()).filter(w => w.length === 5);
+    console.log(`Challenge word pool loaded: ${challengeWordPool.length} words`);
+  } catch (e) {
+    console.error('Failed to load challenge word pool:', e.message);
+  }
+}
+
+function pickWords(n) {
+  const pool = [...challengeWordPool];
+  const words = [];
+  for (let i = 0; i < n && pool.length; i++) {
+    const idx = Math.floor(Math.random() * pool.length);
+    words.push(pool.splice(idx, 1)[0]);
+  }
+  return words;
+}
+
+function serializeLobby(lobby, requestingUserId) {
+  const players = [];
+  for (const [uid, p] of lobby.players) {
+    players.push({ userId: uid, username: p.username, avatar: p.avatar, online: p.online });
+  }
+
+  const roundResults = lobby.roundResults.map(roundMap => {
+    const results = [];
+    for (const [uid, r] of roundMap) {
+      results.push({ userId: uid, ...r });
+    }
+    return results;
+  });
+
+  const totalScores = [];
+  for (const [uid, score] of lobby.totalScores) {
+    const p = lobby.players.get(uid);
+    totalScores.push({ userId: uid, username: p?.username, avatar: p?.avatar, score });
+  }
+  totalScores.sort((a, b) => a.score - b.score);
+
+  return {
+    id: lobby.id,
+    masterId: lobby.masterId,
+    masterUsername: lobby.masterUsername,
+    players,
+    rounds: lobby.rounds,
+    currentRound: lobby.currentRound,
+    started: lobby.started,
+    finished: lobby.finished,
+    // Only reveal the current round's word (never future words)
+    currentWord: lobby.started ? lobby.words[lobby.currentRound] : null,
+    roundResults,
+    totalScores,
+    isLobbyMaster: requestingUserId === lobby.masterId,
+  };
+}
+
+function allPlayersFinishedRound(lobby) {
+  const roundMap = lobby.roundResults[lobby.currentRound];
+  if (!roundMap) return false;
+  for (const [uid] of lobby.players) {
+    if (!roundMap.has(uid)) return false;
+  }
+  return true;
+}
+
+// GET /api/challenge/lobby — poll for lobby state
+app.get('/api/challenge/lobby', (req, res) => {
+  const { guildId, channelId, userId } = req.query;
+  const key = lobbyKey(guildId, channelId);
+  const lobby = lobbies.get(key);
+  if (!lobby) { res.json(null); return; }
+  res.json(serializeLobby(lobby, userId));
+});
+
+// POST /api/challenge/create-or-join — first caller becomes master
+app.post('/api/challenge/create-or-join', express.json(), (req, res) => {
+  const { userId, username, avatar, guildId, channelId } = req.body;
+  if (!userId) { res.status(400).json({ error: 'Missing userId' }); return; }
+
+  const key = lobbyKey(guildId, channelId);
+  let lobby = lobbies.get(key);
+
+  if (!lobby) {
+    lobby = {
+      id: key,
+      masterId: userId,
+      masterUsername: username,
+      players: new Map(),
+      rounds: 3,
+      currentRound: 0,
+      started: false,
+      finished: false,
+      words: [],
+      roundResults: [],
+      totalScores: new Map(),
+    };
+    lobbies.set(key, lobby);
+  }
+
+  // Add/update player
+  lobby.players.set(userId, { username, avatar, online: true, joinedAt: Date.now() });
+  if (!lobby.totalScores.has(userId)) lobby.totalScores.set(userId, 0);
+
+  // Mark player online
+  const p = lobby.players.get(userId);
+  p.online = true;
+
+  res.json(serializeLobby(lobby, userId));
+});
+
+// POST /api/challenge/configure — master sets round count
+app.post('/api/challenge/configure', express.json(), (req, res) => {
+  const { userId, guildId, channelId, rounds } = req.body;
+  const key = lobbyKey(guildId, channelId);
+  const lobby = lobbies.get(key);
+  if (!lobby) { res.status(404).json({ error: 'No lobby' }); return; }
+  if (lobby.masterId !== userId) { res.status(403).json({ error: 'Not lobby master' }); return; }
+  if (lobby.started) { res.status(400).json({ error: 'Already started' }); return; }
+  lobby.rounds = Math.max(1, Math.min(20, parseInt(rounds) || 3));
+  res.json({ ok: true });
+});
+
+// POST /api/challenge/start — master starts the game
+app.post('/api/challenge/start', express.json(), (req, res) => {
+  const { userId, guildId, channelId } = req.body;
+  const key = lobbyKey(guildId, channelId);
+  const lobby = lobbies.get(key);
+  if (!lobby) { res.status(404).json({ error: 'No lobby' }); return; }
+  if (lobby.masterId !== userId) { res.status(403).json({ error: 'Not lobby master' }); return; }
+  if (lobby.started) { res.status(400).json({ error: 'Already started' }); return; }
+
+  lobby.words = pickWords(lobby.rounds);
+  lobby.started = true;
+  lobby.currentRound = 0;
+  lobby.roundResults = Array.from({ length: lobby.rounds }, () => new Map());
+
+  res.json(serializeLobby(lobby, userId));
+});
+
+// POST /api/challenge/submit — player submits their round result
+app.post('/api/challenge/submit', express.json(), (req, res) => {
+  const { userId, guildId, channelId, guesses, timeMs, won } = req.body;
+  const key = lobbyKey(guildId, channelId);
+  const lobby = lobbies.get(key);
+  if (!lobby || !lobby.started) { res.status(404).json({ error: 'No active lobby' }); return; }
+
+  const round = lobby.currentRound;
+  const roundMap = lobby.roundResults[round];
+  if (!roundMap) { res.status(400).json({ error: 'Invalid round' }); return; }
+
+  // Only record if player hasn't already submitted this round
+  if (!roundMap.has(userId)) {
+    const score = calcScore(guesses, won);
+    roundMap.set(userId, {
+      guesses,
+      timeMs,
+      won,
+      score,
+      submittedAt: Date.now(),
+    });
+    // Add to cumulative score
+    lobby.totalScores.set(userId, (lobby.totalScores.get(userId) ?? 0) + score);
+  }
+
+  res.json({
+    allDone: allPlayersFinishedRound(lobby),
+    ...serializeLobby(lobby, userId),
+  });
+});
+
+// POST /api/challenge/next-round — master advances to next round (only when all done)
+app.post('/api/challenge/next-round', express.json(), (req, res) => {
+  const { userId, guildId, channelId } = req.body;
+  const key = lobbyKey(guildId, channelId);
+  const lobby = lobbies.get(key);
+  if (!lobby) { res.status(404).json({ error: 'No lobby' }); return; }
+  if (lobby.masterId !== userId) { res.status(403).json({ error: 'Not lobby master' }); return; }
+
+  if (!allPlayersFinishedRound(lobby)) {
+    res.status(400).json({ error: 'Not everyone has finished yet' }); return;
+  }
+
+  if (lobby.currentRound + 1 >= lobby.rounds) {
+    lobby.finished = true;
+  } else {
+    lobby.currentRound++;
+  }
+
+  res.json(serializeLobby(lobby, userId));
+});
+
+// POST /api/challenge/leave — mark player offline
+app.post('/api/challenge/leave', express.json(), (req, res) => {
+  const { userId, guildId, channelId } = req.body;
+  const key = lobbyKey(guildId, channelId);
+  const lobby = lobbies.get(key);
+  if (lobby) {
+    const p = lobby.players.get(userId);
+    if (p) p.online = false;
+  }
+  res.json({ ok: true });
+});
+
+// POST /api/challenge/disband — master closes the lobby
+app.post('/api/challenge/disband', express.json(), (req, res) => {
+  const { userId, guildId, channelId } = req.body;
+  const key = lobbyKey(guildId, channelId);
+  const lobby = lobbies.get(key);
+  if (lobby && lobby.masterId === userId) lobbies.delete(key);
+  res.json({ ok: true });
+});
+
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
   registerSlashCommand();
+  loadChallengeWords();
 });

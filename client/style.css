@@ -44,6 +44,446 @@ body {
 .bg-stars .star:nth-child(6) { bottom:  8%; right:  7%; font-size: 1.9rem; opacity: 0.38; }
 .bg-stars .star:nth-child(7) { bottom: 38%; right: 17%; font-size: 0.85rem; opacity: 0.30; }
 
+.hidden { display: none !important; }
+
+/* ---- Screens ---- */
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.screen.hidden {
+  display: none;
+}
+
+/* ---- Mode selection ---- */
+
+.mode-card {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 36px 32px;
+  text-align: center;
+  max-width: 380px;
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 8px 32px rgba(42,30,56,0.12);
+}
+
+.mode-card h1 {
+  font-size: 2.2em;
+  margin-bottom: 6px;
+  letter-spacing: 0.2em;
+}
+
+.mode-subtitle {
+  color: rgba(42,30,56,0.6);
+  font-size: 0.9em;
+  font-weight: 600;
+  margin-bottom: 28px;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 14px;
+}
+
+.mode-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 12px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.mode-btn:hover {
+  background: rgba(255,255,255,0.75);
+  transform: translateY(-2px);
+}
+
+.mode-btn:active { transform: translateY(0); }
+
+.mode-icon { font-size: 1.8rem; }
+
+.mode-label {
+  font-size: 0.95em;
+  font-weight: 700;
+  color: #2a1e38;
+}
+
+.mode-desc {
+  font-size: 0.72em;
+  color: rgba(42,30,56,0.55);
+  font-weight: 500;
+}
+
+/* ---- Lobby ---- */
+
+.lobby-card {
+  background: rgba(255,255,255,0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 28px 24px;
+  max-width: 420px;
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 8px 32px rgba(42,30,56,0.12);
+}
+
+.lobby-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.lobby-header h2 {
+  font-size: 1.3em;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  flex: 1;
+}
+
+.back-btn {
+  background: rgba(255,255,255,0.5);
+  border: none;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.1em;
+  cursor: pointer;
+  font-weight: 700;
+  color: #2a1e38;
+  transition: background 0.15s;
+}
+
+.back-btn:hover { background: rgba(255,255,255,0.75); }
+
+.master-badge {
+  background: rgba(74,158,104,0.25);
+  color: #2e7a50;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.72em;
+  font-weight: 700;
+}
+
+.lobby-label {
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(42,30,56,0.5);
+  margin-bottom: 10px;
+}
+
+#lobby-players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.lobby-player-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.3);
+}
+
+.lobby-player-row img,
+.lobby-player-avatar-ph {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lobby-player-avatar-ph {
+  background: rgba(255,255,255,0.5);
+}
+
+.lobby-player-name {
+  font-size: 0.88em;
+  font-weight: 600;
+  flex: 1;
+}
+
+.lobby-player-tag {
+  font-size: 0.68em;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(42,30,56,0.1);
+  color: rgba(42,30,56,0.5);
+}
+
+.lobby-player-tag.master {
+  background: rgba(74,158,104,0.2);
+  color: #2e7a50;
+}
+
+.rounds-control {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.rounds-control label {
+  display: block;
+  font-size: 0.8em;
+  font-weight: 600;
+  color: rgba(42,30,56,0.6);
+  margin-bottom: 8px;
+}
+
+.rounds-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.rounds-row button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.5);
+  font-size: 1.2em;
+  font-weight: 700;
+  cursor: pointer;
+  color: #2a1e38;
+  transition: background 0.15s;
+}
+
+.rounds-row button:hover { background: rgba(255,255,255,0.8); }
+
+#rounds-display {
+  font-size: 1.8em;
+  font-weight: 800;
+  min-width: 32px;
+  text-align: center;
+  color: #2a1e38;
+}
+
+.start-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(74,158,104,0.8);
+  color: #ffffff;
+  font-size: 1em;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.start-btn:hover { background: rgba(74,158,104,1); transform: translateY(-1px); }
+.start-btn:active { transform: translateY(0); }
+
+#lobby-waiting-msg {
+  text-align: center;
+  font-size: 0.85em;
+  color: rgba(42,30,56,0.55);
+  font-weight: 500;
+  padding: 12px 0;
+}
+
+/* ---- Round results / podium ---- */
+
+.results-card {
+  background: rgba(255,255,255,0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 28px 24px;
+  max-width: 460px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 8px 32px rgba(42,30,56,0.12);
+}
+
+.results-header {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.results-header h2 {
+  font-size: 1.4em;
+  font-weight: 800;
+}
+
+#results-word-reveal {
+  font-size: 0.85em;
+  color: rgba(42,30,56,0.55);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Podium */
+#podium-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  min-height: 130px;
+}
+
+.podium-place {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.podium-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,0.6);
+}
+
+.podium-avatar-ph {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  border: 3px solid rgba(255,255,255,0.6);
+}
+
+.podium-name {
+  font-size: 0.72em;
+  font-weight: 700;
+  text-align: center;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podium-score-label {
+  font-size: 0.65em;
+  color: rgba(42,30,56,0.55);
+}
+
+.podium-block {
+  border-radius: 10px 10px 0 0;
+  width: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6em;
+  font-weight: 800;
+  color: rgba(255,255,255,0.9);
+}
+
+.podium-1st .podium-block { height: 90px; background: rgba(201,160,53,0.85); }
+.podium-2nd .podium-block { height: 65px; background: rgba(160,160,170,0.75); }
+.podium-3rd .podium-block { height: 48px; background: rgba(180,120,80,0.7); }
+
+/* Full leaderboard list */
+#full-leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 18px;
+}
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.3);
+}
+
+.lb-rank {
+  font-size: 0.8em;
+  font-weight: 800;
+  color: rgba(42,30,56,0.45);
+  width: 22px;
+  text-align: center;
+}
+
+.lb-avatar, .lb-avatar-ph {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lb-avatar-ph { background: rgba(255,255,255,0.5); }
+
+.lb-name {
+  flex: 1;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.lb-round-score {
+  font-size: 0.78em;
+  color: rgba(42,30,56,0.5);
+}
+
+.lb-total-score {
+  font-size: 0.88em;
+  font-weight: 800;
+  color: #2a1e38;
+  min-width: 30px;
+  text-align: right;
+}
+
+#results-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#waiting-next-msg {
+  text-align: center;
+  font-size: 0.82em;
+  color: rgba(42,30,56,0.55);
+  font-weight: 500;
+  padding: 8px;
+}
+
+/* Challenge round indicator in game */
+#challenge-indicator {
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(42,30,56,0.5);
+  text-align: center;
+  padding: 4px 0;
+  flex-shrink: 0;
+}
+
 /* ---- Players sidebar ---- */
 
 #players-sidebar {

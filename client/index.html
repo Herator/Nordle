@@ -21,6 +21,75 @@
       <span class="star">✳</span>
     </div>
 
+    <!-- ── Mode selection screen ── -->
+    <div id="mode-screen" class="screen">
+      <div class="mode-card">
+        <h1>Nordle</h1>
+        <p class="mode-subtitle">Velg spillmodus</p>
+        <div class="mode-buttons">
+          <button id="btn-daily" class="mode-btn">
+            <span class="mode-icon">📅</span>
+            <span class="mode-label">Daglig</span>
+            <span class="mode-desc">Ett ord per dag</span>
+          </button>
+          <button id="btn-challenge" class="mode-btn">
+            <span class="mode-icon">⚔️</span>
+            <span class="mode-label">Utfordring</span>
+            <span class="mode-desc">Spill mot venner</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Challenge lobby screen ── -->
+    <div id="lobby-screen" class="screen hidden">
+      <div class="lobby-card">
+        <div class="lobby-header">
+          <button id="btn-leave-lobby" class="back-btn">←</button>
+          <h2>Utfordring</h2>
+          <div id="lobby-master-badge" class="master-badge hidden">Lobby-mester</div>
+        </div>
+
+        <div id="lobby-waiting" class="">
+          <p class="lobby-label">Spillere i lobbyen</p>
+          <div id="lobby-players-list"></div>
+
+          <div id="lobby-master-controls" class="hidden">
+            <div class="rounds-control">
+              <label>Antall runder</label>
+              <div class="rounds-row">
+                <button id="btn-rounds-down">−</button>
+                <span id="rounds-display">3</span>
+                <button id="btn-rounds-up">+</button>
+              </div>
+            </div>
+            <button id="btn-start-challenge" class="start-btn">Start spillet</button>
+          </div>
+
+          <div id="lobby-waiting-msg" class="hidden">
+            <p>Venter på at lobby-mester starter spillet…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Round results / podium screen ── -->
+    <div id="results-screen" class="screen hidden">
+      <div class="results-card">
+        <div class="results-header">
+          <h2 id="results-title">Runde 1 ferdig!</h2>
+          <p id="results-word-reveal"></p>
+        </div>
+        <div id="podium-container"></div>
+        <div id="full-leaderboard"></div>
+        <div id="results-actions">
+          <button id="btn-next-round" class="start-btn hidden">Neste runde →</button>
+          <div id="waiting-next-msg" class="hidden">Venter på at lobby-mester starter neste runde…</div>
+          <button id="btn-final-back" class="mode-btn hidden">Tilbake til start</button>
+        </div>
+      </div>
+    </div>
+
     <div id="players-sidebar">
       <div id="players-sidebar-title">Spillere</div>
       <div id="players-list"></div>
@@ -30,6 +99,7 @@
       <div class="app-header">
         <h1>Nordle</h1>
       </div>
+      <div id="challenge-indicator" class="hidden"></div>
       <div id="message"></div>
 
       <div class="grid" id="grid">

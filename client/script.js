@@ -75,3 +75,7 @@ export function checkWord(guess) {
 export function getSecretWord() {
   return secretWord;
 }
+
+export function setSecretWord(word) {
+  secretWord = word.toLowerCase();
+}
