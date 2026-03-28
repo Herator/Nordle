@@ -1,11 +1,12 @@
-let wordList = [];
+let allWords = [];    // all valid 5-letter words (for guess validation)
+let dailyWords = [];  // common everyday words (for daily word selection)
 let wordSet = null;
 let secretWord = '';
 
 export async function initGame() {
-  await loadWordList();
+  await loadWordLists();
   secretWord = getDailyWord();
-  console.log('Game initialized, word list size:', wordList.length);
+  console.log('Game initialized, all words:', allWords.length, 'daily words:', dailyWords.length);
 }
 
 function getDailyWord() {
@@ -13,24 +14,31 @@ function getDailyWord() {
   const today = new Date();
   const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
 
-  // Simple hash from the date string to get a stable index
   let hash = 0;
   for (let i = 0; i < dateString.length; i++) {
     hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
     hash |= 0;
   }
 
-  return wordList[Math.abs(hash) % wordList.length];
+  return dailyWords[Math.abs(hash) % dailyWords.length];
 }
 
-async function loadWordList() {
-  const response = await fetch('/ord.csv');
-  const text = await response.text();
-  wordList = text
+function parseWordFile(text) {
+  return text
     .split(/[\r\n]+/)
     .map(w => w.trim().toLowerCase())
     .filter(w => w.length === 5);
-  wordSet = new Set(wordList);
+}
+
+async function loadWordLists() {
+  const [allRes, dailyRes] = await Promise.all([
+    fetch('/ord.txt'),
+    fetch('/daglige-ord.txt'),
+  ]);
+
+  allWords = parseWordFile(await allRes.text());
+  dailyWords = parseWordFile(await dailyRes.text());
+  wordSet = new Set(allWords);
 }
 
 export function isValidWord(word) {
