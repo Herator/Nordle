@@ -648,29 +648,36 @@ function showFinalResults(lobby) {
 // ---- Mode selection UI ----
 
 function setupModeScreen() {
-  document.getElementById('btn-daily').addEventListener('click', async () => {
-    gameMode = 'daily';
-    document.getElementById('players-sidebar').classList.remove('hidden');
-    document.getElementById('challenge-indicator').classList.add('hidden');
-    showScreen(null);
-    await joinDailySession();
-    await initGame();
-    await fetchAndRestoreState();
-    if (!gameOver) {
-      const first = document.querySelector(`#row-${currentRow} input:not([disabled])`);
-      if (first) first.focus();
-      if (currentRow === 0) showMessage('Gjett ordet!', '');
-    }
-    fetchPlayers();
-    setInterval(fetchPlayers, 3000);
+  document.getElementById('btn-daily').addEventListener('click', () => {
+    showScreen(null); // hide mode screen immediately
+    showMessage('Laster…', '');
+    onIdentityReady(async () => {
+      gameMode = 'daily';
+      document.getElementById('players-sidebar').classList.remove('hidden');
+      document.getElementById('challenge-indicator').classList.add('hidden');
+      await joinDailySession();
+      await initGame();
+      await fetchAndRestoreState();
+      if (!gameOver) {
+        const first = document.querySelector(`#row-${currentRow} input:not([disabled])`);
+        if (first) first.focus();
+        if (currentRow === 0) showMessage('Gjett ordet!', '');
+      }
+      fetchPlayers();
+      setInterval(fetchPlayers, 3000);
+    });
   });
 
-  document.getElementById('btn-challenge').addEventListener('click', async () => {
-    gameMode = 'challenge';
-    document.getElementById('players-sidebar').classList.add('hidden');
-    document.getElementById('challenge-indicator').classList.remove('hidden');
-    await initGame(); // loads word lists
-    await joinChallengeLobby();
+  document.getElementById('btn-challenge').addEventListener('click', () => {
+    showScreen(null); // hide mode screen immediately
+    showMessage('Laster…', '');
+    onIdentityReady(async () => {
+      gameMode = 'challenge';
+      document.getElementById('players-sidebar').classList.add('hidden');
+      document.getElementById('challenge-indicator').classList.remove('hidden');
+      await initGame();
+      await joinChallengeLobby();
+    });
   });
 }
 
@@ -748,7 +755,30 @@ function setupResultsScreen() {
 
 // ---- Boot ----
 
+// Resolves once we have a player identity (Discord auth or fallback)
+let identityReady = false;
+let identityWaiters = [];
+function onIdentityReady(fn) {
+  if (identityReady) { fn(); return; }
+  identityWaiters.push(fn);
+}
+function resolveIdentity() {
+  identityReady = true;
+  identityWaiters.forEach(fn => fn());
+  identityWaiters = [];
+}
+
 async function start() {
+  // Set up all UI handlers immediately so buttons work right away
+  setupInputHandlers();
+  setupModeScreen();
+  setupLobbyScreen();
+  setupResultsScreen();
+
+  document.getElementById('players-sidebar').classList.add('hidden');
+  showScreen('mode-screen');
+
+  // Auth runs in the background — UI is already interactive
   try {
     await setupDiscordSdk();
     playerId = auth.user.id;
@@ -758,19 +788,11 @@ async function start() {
     try { playerGuildId = discordSdk.guildId; } catch {}
   } catch (e) {
     console.log("Discord SDK setup failed:", e.message);
-    // Fallback identity for testing outside Discord
     playerId = 'local-' + Math.random().toString(36).slice(2, 8);
     playerUsername = 'TestSpiller';
   }
 
-  setupInputHandlers();
-  setupModeScreen();
-  setupLobbyScreen();
-  setupResultsScreen();
-
-  // Hide sidebar and game until mode is chosen
-  document.getElementById('players-sidebar').classList.add('hidden');
-  showScreen('mode-screen');
+  resolveIdentity();
 }
 
 start();
