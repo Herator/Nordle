@@ -40,6 +40,7 @@ let playerId = null;
 let playerUsername = null;
 let playerAvatar = null;
 let playerChannelId = null;
+let playerGuildId = null;
 
 function showMessage(text, type) {
   const msg = document.getElementById('message');
@@ -127,6 +128,9 @@ function submitGuess() {
 
   if (!isValidWord(guess)) {
     showMessage('Ikke et gyldig ord!', 'error');
+    const row = document.getElementById(`row-${currentRow}`);
+    row.classList.add('shake');
+    row.addEventListener('animationend', () => row.classList.remove('shake'), { once: true });
     return;
   }
 
@@ -239,6 +243,7 @@ function reportProgress(word, results, done, won) {
       userId: playerId,
       username: playerUsername,
       avatar: playerAvatar,
+      guildId: playerGuildId,
       channelId: playerChannelId,
       word,
       results,
@@ -280,6 +285,84 @@ async function fetchAndRestoreState() {
   }
 }
 
+// ---- Players sidebar ----
+
+function renderPlayers(players) {
+  const list = document.getElementById('players-list');
+  list.innerHTML = '';
+  for (const p of players) {
+    const card = document.createElement('div');
+    card.className = 'player-card';
+
+    // Avatar + name
+    const info = document.createElement('div');
+    info.className = 'player-info';
+
+    if (p.avatar) {
+      const img = document.createElement('img');
+      img.className = 'player-avatar';
+      img.src = `https://cdn.discordapp.com/avatars/${p.userId}/${p.avatar}.png?size=32`;
+      img.alt = p.username;
+      info.appendChild(img);
+    } else {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'player-avatar-placeholder';
+      info.appendChild(placeholder);
+    }
+
+    const name = document.createElement('span');
+    name.className = 'player-name';
+    name.textContent = p.userId === playerId ? 'Deg' : p.username;
+    info.appendChild(name);
+    card.appendChild(info);
+
+    // Mini 6x5 color grid
+    const grid = document.createElement('div');
+    grid.className = 'mini-grid';
+    for (let r = 0; r < 6; r++) {
+      const row = document.createElement('div');
+      row.className = 'mini-row';
+      for (let c = 0; c < 5; c++) {
+        const tile = document.createElement('div');
+        tile.className = 'mini-tile';
+        const rowData = p.rows[r];
+        tile.classList.add(rowData ? rowData.results[c] : 'empty');
+        row.appendChild(tile);
+      }
+      grid.appendChild(row);
+    }
+    card.appendChild(grid);
+
+    list.appendChild(card);
+  }
+}
+
+async function joinSession() {
+  if (!playerId) return;
+  await fetch('/api/join', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId: playerId,
+      username: playerUsername,
+      avatar: playerAvatar,
+      guildId: playerGuildId,
+      channelId: playerChannelId,
+    }),
+  }).catch(e => console.log('Join failed:', e.message));
+}
+
+async function fetchPlayers() {
+  try {
+    const url = playerGuildId ? `/api/players?guildId=${encodeURIComponent(playerGuildId)}` : '/api/players';
+    const res = await fetch(url);
+    const players = await res.json();
+    renderPlayers(players);
+  } catch (e) {
+    console.log('Failed to fetch players:', e.message);
+  }
+}
+
 // ---- Initialize ----
 async function start() {
   try {
@@ -289,6 +372,8 @@ async function start() {
     playerUsername = auth.user.username;
     playerAvatar = auth.user.avatar;
     try { playerChannelId = discordSdk.channelId; } catch {}
+    try { playerGuildId = discordSdk.guildId; } catch {}
+    await joinSession();
   } catch (e) {
     console.log("Discord SDK setup failed (running outside Discord?):", e.message);
   }
@@ -299,6 +384,10 @@ async function start() {
   await fetchAndRestoreState();
 
   setupInputHandlers();
+
+  // Live player sidebar — fetch immediately then every 3 seconds
+  fetchPlayers();
+  setInterval(fetchPlayers, 3000);
 
   if (!gameOver) {
     const firstInput = document.querySelector(`#row-${currentRow} input:not([disabled])`);

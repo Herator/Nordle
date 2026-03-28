@@ -1,0 +1,96 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Subtle radial glow in the center -->
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="55%">
+      <stop offset="0%"   stop-color="#1c1c1f"/>
+      <stop offset="100%" stop-color="#0d0d0f"/>
+    </radialGradient>
+
+    <!-- Green tile gradient -->
+    <linearGradient id="gGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#5faa55"/>
+      <stop offset="100%" stop-color="#458a3c"/>
+    </linearGradient>
+
+    <!-- Yellow tile gradient -->
+    <linearGradient id="yGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#c9af3f"/>
+      <stop offset="100%" stop-color="#9e863a"/>
+    </linearGradient>
+
+    <!-- Gray tile gradient -->
+    <linearGradient id="dGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#444446"/>
+      <stop offset="100%" stop-color="#2e2e30"/>
+    </linearGradient>
+
+    <!-- Empty tile -->
+    <linearGradient id="eGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#1e1e21"/>
+      <stop offset="100%" stop-color="#161618"/>
+    </linearGradient>
+
+    <!-- Drop shadow filter for tiles -->
+    <filter id="tileShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+
+    <!-- Clip to app-icon rounded square (Apple squircle ~22% radius) -->
+    <clipPath id="appShape">
+      <rect width="1024" height="1024" rx="230" ry="230"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#appShape)">
+    <!-- Background -->
+    <rect width="1024" height="1024" fill="url(#bgGlow)"/>
+
+    <!--
+      Grid: 5 cols × 6 rows
+      Tile size: 108px  Gap: 14px
+      Grid width:  5×108 + 4×14 = 596px  → start x = (1024−596)/2 = 214
+      Grid height: 6×108 + 5×14 = 718px  → start y = (1024−718)/2 = 153
+    -->
+
+    <!-- ── Row 0: first guess — some hits ── -->
+    <rect x="214" y="153" width="108" height="108" rx="10" fill="url(#dGrad)" filter="url(#tileShadow)"/>
+    <rect x="336" y="153" width="108" height="108" rx="10" fill="url(#dGrad)" filter="url(#tileShadow)"/>
+    <rect x="458" y="153" width="108" height="108" rx="10" fill="url(#yGrad)" filter="url(#tileShadow)"/>
+    <rect x="580" y="153" width="108" height="108" rx="10" fill="url(#dGrad)" filter="url(#tileShadow)"/>
+    <rect x="702" y="153" width="108" height="108" rx="10" fill="url(#dGrad)" filter="url(#tileShadow)"/>
+
+    <!-- ── Row 1: closing in ── -->
+    <rect x="214" y="275" width="108" height="108" rx="10" fill="url(#dGrad)" filter="url(#tileShadow)"/>
+    <rect x="336" y="275" width="108" height="108" rx="10" fill="url(#gGrad)" filter="url(#tileShadow)"/>
+    <rect x="458" y="275" width="108" height="108" rx="10" fill="url(#dGrad)" filter="url(#tileShadow)"/>
+    <rect x="580" y="275" width="108" height="108" rx="10" fill="url(#yGrad)" filter="url(#tileShadow)"/>
+    <rect x="702" y="275" width="108" height="108" rx="10" fill="url(#gGrad)" filter="url(#tileShadow)"/>
+
+    <!-- ── Row 2: almost there ── -->
+    <rect x="214" y="397" width="108" height="108" rx="10" fill="url(#gGrad)" filter="url(#tileShadow)"/>
+    <rect x="336" y="397" width="108" height="108" rx="10" fill="url(#gGrad)" filter="url(#tileShadow)"/>
+    <rect x="458" y="397" width="108" height="108" rx="10" fill="url(#yGrad)" filter="url(#tileShadow)"/>
+    <rect x="580" y="397" width="108" height="108" rx="10" fill="url(#gGrad)" filter="url(#tileShadow)"/>
+    <rect x="702" y="397" width="108" height="108" rx="10" fill="url(#dGrad)" filter="url(#tileShadow)"/>
+
+    <!-- ── Row 3: WIN — all green ── -->
+    <rect x="214" y="519" width="108" height="108" rx="10" fill="url(#gGrad)" filter="url(#tileShadow)"/>
+    <rect x="336" y="519" width="108" height="108" rx="10" fill="url(#gGrad)" filter="url(#tileShadow)"/>
+    <rect x="458" y="519" width="108" height="108" rx="10" fill="url(#gGrad)" filter="url(#tileShadow)"/>
+    <rect x="580" y="519" width="108" height="108" rx="10" fill="url(#gGrad)" filter="url(#tileShadow)"/>
+    <rect x="702" y="519" width="108" height="108" rx="10" fill="url(#gGrad)" filter="url(#tileShadow)"/>
+
+    <!-- ── Rows 4–5: unused (empty) ── -->
+    <rect x="214" y="641" width="108" height="108" rx="10" fill="url(#eGrad)" stroke="#2a2a2c" stroke-width="2"/>
+    <rect x="336" y="641" width="108" height="108" rx="10" fill="url(#eGrad)" stroke="#2a2a2c" stroke-width="2"/>
+    <rect x="458" y="641" width="108" height="108" rx="10" fill="url(#eGrad)" stroke="#2a2a2c" stroke-width="2"/>
+    <rect x="580" y="641" width="108" height="108" rx="10" fill="url(#eGrad)" stroke="#2a2a2c" stroke-width="2"/>
+    <rect x="702" y="641" width="108" height="108" rx="10" fill="url(#eGrad)" stroke="#2a2a2c" stroke-width="2"/>
+
+    <rect x="214" y="763" width="108" height="108" rx="10" fill="url(#eGrad)" stroke="#2a2a2c" stroke-width="2"/>
+    <rect x="336" y="763" width="108" height="108" rx="10" fill="url(#eGrad)" stroke="#2a2a2c" stroke-width="2"/>
+    <rect x="458" y="763" width="108" height="108" rx="10" fill="url(#eGrad)" stroke="#2a2a2c" stroke-width="2"/>
+    <rect x="580" y="763" width="108" height="108" rx="10" fill="url(#eGrad)" stroke="#2a2a2c" stroke-width="2"/>
+    <rect x="702" y="763" width="108" height="108" rx="10" fill="url(#eGrad)" stroke="#2a2a2c" stroke-width="2"/>
+  </g>
+</svg>

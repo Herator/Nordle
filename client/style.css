@@ -11,29 +11,136 @@ html, body {
 
 body {
   display: flex;
-  justify-content: center;
-  background-color: #121213;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background-color: #111113;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   color: #ffffff;
 }
+
+/* ---- Players sidebar ---- */
+
+#players-sidebar {
+  width: 190px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #222224;
+  padding: 14px 10px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3c transparent;
+}
+
+#players-sidebar-title {
+  font-size: 0.62em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #565758;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #222224;
+}
+
+.player-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 6px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  transition: background-color 0.15s;
+}
+
+.player-card:hover {
+  background-color: #1c1c1e;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.player-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.player-avatar-placeholder {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #3a3a3c;
+  flex-shrink: 0;
+}
+
+.player-name {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: #cccccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mini-row {
+  display: flex;
+  gap: 2px;
+}
+
+.mini-tile {
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+}
+
+.mini-tile.correct  { background-color: #538d4e; }
+.mini-tile.present  { background-color: #b59f3b; }
+.mini-tile.absent   { background-color: #3a3a3c; }
+.mini-tile.empty    { background-color: #1c1c1e; border: 1px solid #2a2a2c; }
+
+/* ---- Main game container ---- */
 
 #game-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex: 1;
   height: 100vh;
   max-width: 500px;
+  margin: 0 auto;
+  padding: 0 8px 1vh;
+  min-width: 0;
+}
+
+/* ---- Header ---- */
+
+.app-header {
   width: 100%;
-  padding: 1vh 8px 1vh;
+  text-align: center;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid #222224;
+  flex-shrink: 0;
+  margin-bottom: 0;
 }
 
 h1 {
-  font-size: clamp(1.2em, 4vh, 2.2em);
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-size: clamp(1.2em, 4vh, 2em);
+  font-weight: 800;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  flex-shrink: 0;
 }
+
+/* ---- Message ---- */
 
 #message {
   height: 3.5vh;
@@ -47,17 +154,11 @@ h1 {
   flex-shrink: 0;
 }
 
-#message.error {
-  color: #ff4444;
-}
+#message.error { color: #ff6b6b; }
+#message.win   { color: #6aaa64; }
+#message.lose  { color: #ff6b6b; }
 
-#message.win {
-  color: #6aaa64;
-}
-
-#message.lose {
-  color: #ff4444;
-}
+/* ---- Grid ---- */
 
 .grid {
   display: grid;
@@ -66,7 +167,7 @@ h1 {
   flex: 1;
   min-height: 0;
   width: 100%;
-  max-width: 350px;
+  max-width: 330px;
   margin: 0 auto;
 }
 
@@ -74,8 +175,23 @@ h1 {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: min(5px, 0.6vh);
-  aspect-ratio: auto;
 }
+
+/* Shake on invalid word */
+.row.shake {
+  animation: shake 0.45s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-5px); }
+  35%       { transform: translateX(5px); }
+  55%       { transform: translateX(-4px); }
+  75%       { transform: translateX(4px); }
+  90%       { transform: translateX(-2px); }
+}
+
+/* ---- Tiles ---- */
 
 input {
   width: 100%;
@@ -84,18 +200,19 @@ input {
   text-align: center;
   font-size: clamp(1em, 3.5vh, 2em);
   font-weight: 700;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   text-transform: uppercase;
-  border: 2px solid #3a3a3c;
-  border-radius: 0;
+  border: 2px solid #333335;
+  border-radius: 4px;
   outline: none;
-  background-color: #121213;
+  background-color: #111113;
   color: #ffffff;
   caret-color: transparent;
-  transition: background-color 0.3s, border-color 0.3s;
+  transition: border-color 0.15s;
 }
 
 input:focus {
-  border-color: #565758;
+  border-color: #6e6e70;
 }
 
 input:disabled {
@@ -104,24 +221,20 @@ input:disabled {
 }
 
 input.filled {
-  border-color: #565758;
+  border-color: #6e6e70;
+  animation: pop 0.08s ease;
+}
+
+@keyframes pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 /* Tile colors */
-input.correct {
-  background-color: #538d4e;
-  border-color: #538d4e;
-}
-
-input.present {
-  background-color: #b59f3b;
-  border-color: #b59f3b;
-}
-
-input.absent {
-  background-color: #3a3a3c;
-  border-color: #3a3a3c;
-}
+input.correct { background-color: #538d4e; border-color: #538d4e; }
+input.present { background-color: #b59f3b; border-color: #b59f3b; }
+input.absent  { background-color: #3a3a3c; border-color: #3a3a3c; }
 
 /* Flip animation */
 input.flip {
@@ -129,12 +242,13 @@ input.flip {
 }
 
 @keyframes flip {
-  0% { transform: scaleY(1); }
-  50% { transform: scaleY(0); }
+  0%   { transform: scaleY(1); }
+  50%  { transform: scaleY(0); }
   100% { transform: scaleY(1); }
 }
 
-/* Keyboard - fixed at bottom */
+/* ---- Keyboard ---- */
+
 #keyboard {
   display: flex;
   flex-direction: column;
@@ -158,19 +272,28 @@ input.flip {
   max-width: 40px;
   height: clamp(36px, 5.5vh, 50px);
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   background-color: #818384;
   color: #ffffff;
   font-size: clamp(0.65em, 1.5vh, 0.85em);
   font-weight: 700;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   cursor: pointer;
   text-transform: uppercase;
-  transition: background-color 0.2s;
+  transition: background-color 0.15s, transform 0.08s, opacity 0.15s;
   padding: 0 2px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+  user-select: none;
 }
 
 #keyboard button:hover {
-  opacity: 0.85;
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+#keyboard button:active {
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 #keyboard button.key-wide {
@@ -179,32 +302,26 @@ input.flip {
   font-size: clamp(0.55em, 1.3vh, 0.75em);
 }
 
-#keyboard button.correct {
-  background-color: #538d4e;
-}
+#keyboard button.correct { background-color: #538d4e; }
+#keyboard button.present { background-color: #b59f3b; }
+#keyboard button.absent  { background-color: #3a3a3c; }
 
-#keyboard button.present {
-  background-color: #b59f3b;
-}
+/* ---- Legal footer ---- */
 
-#keyboard button.absent {
-  background-color: #3a3a3c;
-}
-
-/* Legal footer */
 #legal-footer {
   display: flex;
   gap: 8px;
   align-items: center;
   padding: 6px 0 4px;
   flex-shrink: 0;
-  font-size: 0.7em;
-  color: #565758;
+  font-size: 0.68em;
+  color: #3a3a3c;
 }
 
 #legal-footer a {
-  color: #565758;
+  color: #3a3a3c;
   text-decoration: none;
+  transition: color 0.15s;
 }
 
 #legal-footer a:hover {

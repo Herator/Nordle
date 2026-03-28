@@ -51,6 +51,7 @@ function getOrCreateState(userId, defaults = {}) {
       username: "Ukjent",
       avatar: null,
       channelId: null,
+      guildId: null,
       messageId: null,
       rows: [],
       done: false,
@@ -210,6 +211,38 @@ app.post("/api/interactions", express.raw({ type: "*/*" }), async (req, res) => 
 
 app.use(express.json());
 
+// Get all players' today progress for a guild (words are NOT included)
+app.get("/api/players", (req, res) => {
+  const { guildId } = req.query;
+  const today = getTodayDate();
+  const players = [];
+  for (const [, state] of playerStates) {
+    if (state.date !== today) continue;
+    if (guildId && state.guildId && state.guildId !== guildId) continue;
+    players.push({
+      userId: state.userId,
+      username: state.username,
+      avatar: state.avatar,
+      rows: state.rows.map(r => ({ results: r.results })),
+      done: state.done,
+      won: state.won,
+    });
+  }
+  res.json(players);
+});
+
+// Register a player as active (called on activity open, before any guesses)
+app.post("/api/join", (req, res) => {
+  const { userId, username, avatar, guildId, channelId } = req.body;
+  if (!userId) { res.status(400).json({ error: "Missing userId" }); return; }
+  const state = getOrCreateState(userId, { username, avatar, guildId, channelId });
+  state.username = username || state.username;
+  state.avatar = avatar || state.avatar;
+  if (guildId) state.guildId = guildId;
+  if (channelId && !state.channelId) state.channelId = channelId;
+  res.json({ ok: true });
+});
+
 // Get today's saved state (called on activity load to restore progress)
 app.get("/api/state", (req, res) => {
   const { userId } = req.query;
@@ -221,12 +254,13 @@ app.get("/api/state", (req, res) => {
 
 // Called after each submitted guess row
 app.post("/api/progress", async (req, res) => {
-  const { userId, username, avatar, channelId, word, results, done, won } = req.body;
+  const { userId, username, avatar, guildId, channelId, word, results, done, won } = req.body;
   if (!userId || !results) { res.status(400).json({ error: "Missing params" }); return; }
 
-  const state = getOrCreateState(userId, { username, avatar, channelId });
+  const state = getOrCreateState(userId, { username, avatar, guildId, channelId });
   state.username = username || state.username;
   state.avatar = avatar || state.avatar;
+  if (guildId) state.guildId = guildId;
   if (channelId && !state.channelId) state.channelId = channelId;
 
   state.rows.push({ word, results });

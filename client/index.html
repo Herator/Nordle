@@ -4,11 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nordle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="players-sidebar">
+      <div id="players-sidebar-title">Spillere</div>
+      <div id="players-list"></div>
+    </div>
+
     <div id="game-container">
-      <h1>Nordle</h1>
+      <div class="app-header">
+        <h1>Nordle</h1>
+      </div>
       <div id="message"></div>
 
       <div class="grid" id="grid">
@@ -101,6 +111,12 @@
           <button data-key="Backspace" class="key-wide">&#9003;</button>
         </div>
       </div>
+
+      <footer id="legal-footer">
+        <a href="tos.html" target="_blank">Vilkår for bruk</a>
+        <span>·</span>
+        <a href="privacy.html" target="_blank">Personvern</a>
+      </footer>
     </div>
 
     <script type="module" src="main.js"></script>

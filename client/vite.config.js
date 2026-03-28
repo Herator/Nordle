@@ -1,8 +1,24 @@
 import {defineConfig} from 'vite';
 
+const staticPages = {
+  '/tos': '/tos.html',
+  '/privacy': '/privacy.html',
+};
+
 // https://vitejs.dev/config/
 export default defineConfig({
   envDir: '../',
+  plugins: [
+    {
+      name: 'static-pages',
+      configureServer(server) {
+        server.middlewares.use((req, _res, next) => {
+          if (staticPages[req.url]) req.url = staticPages[req.url];
+          next();
+        });
+      },
+    },
+  ],
   server: {
     allowedHosts: true,
     proxy: {
