@@ -11,6 +11,7 @@ html, body {
 
 body {
   display: flex;
+  justify-content: center;
   background-color: #111113;
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   color: #ffffff;
@@ -19,8 +20,11 @@ body {
 /* ---- Players sidebar ---- */
 
 #players-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
   width: 190px;
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   border-right: 1px solid #222224;
@@ -28,6 +32,7 @@ body {
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #3a3a3c transparent;
+  z-index: 10;
 }
 
 #players-sidebar-title {
@@ -114,12 +119,10 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
   height: 100vh;
   max-width: 500px;
-  margin: 0 auto;
+  width: 100%;
   padding: 0 8px 1vh;
-  min-width: 0;
 }
 
 /* ---- Header ---- */
