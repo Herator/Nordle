@@ -4,25 +4,31 @@ import "./style.css";
 
 let auth;
 
+let discordSdk = null;
+
 async function setupDiscordSdk() {
   const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID;
   if (!clientId) throw new Error('No Discord client ID configured');
 
-  const discordSdk = new DiscordSDK(clientId);
+  discordSdk = new DiscordSDK(clientId);
 
-  const readyTimeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Discord SDK ready timeout')), 10000)
+  const timeout = (ms, msg) => new Promise((_, reject) =>
+    setTimeout(() => reject(new Error(msg)), ms)
   );
-  await Promise.race([discordSdk.ready(), readyTimeout]);
+
+  await Promise.race([discordSdk.ready(), timeout(10000, 'Discord SDK ready timeout')]);
   console.log("Discord SDK is ready");
 
-  const { code } = await discordSdk.commands.authorize({
-    client_id: clientId,
-    response_type: "code",
-    state: "",
-    prompt: "none",
-    scope: ["identify", "guilds", "applications.commands"],
-  });
+  const { code } = await Promise.race([
+    discordSdk.commands.authorize({
+      client_id: clientId,
+      response_type: "code",
+      state: "",
+      prompt: "none",
+      scope: ["identify", "guilds", "applications.commands"],
+    }),
+    timeout(10000, 'Discord authorize timeout'),
+  ]);
 
   const response = await fetch("/api/token", {
     method: "POST",
@@ -31,7 +37,10 @@ async function setupDiscordSdk() {
   });
   const { access_token } = await response.json();
 
-  auth = await discordSdk.commands.authenticate({ access_token });
+  auth = await Promise.race([
+    discordSdk.commands.authenticate({ access_token }),
+    timeout(10000, 'Discord authenticate timeout'),
+  ]);
   if (auth == null) throw new Error("Authenticate command failed");
 }
 
@@ -656,19 +665,26 @@ function setupModeScreen() {
     showScreen(null); // hide mode screen immediately
     showMessage('Laster…', '');
     onIdentityReady(async () => {
-      gameMode = 'daily';
-      document.getElementById('players-sidebar').classList.remove('hidden');
-      document.getElementById('challenge-indicator').classList.add('hidden');
-      await joinDailySession();
-      await initGame();
-      await fetchAndRestoreState();
-      if (!gameOver) {
-        const first = document.querySelector(`#row-${currentRow} input:not([disabled])`);
-        if (first) first.focus();
-        if (currentRow === 0) showMessage('Gjett ordet!', '');
+      try {
+        gameMode = 'daily';
+        document.getElementById('players-sidebar').classList.remove('hidden');
+        document.getElementById('challenge-indicator').classList.add('hidden');
+        await joinDailySession();
+        await initGame();
+        await fetchAndRestoreState();
+        if (!gameOver) {
+          const first = document.querySelector(`#row-${currentRow} input:not([disabled])`);
+          if (first) first.focus();
+          if (currentRow === 0) showMessage('Gjett ordet!', '');
+        }
+        fetchPlayers();
+        setInterval(fetchPlayers, 3000);
+      } catch (e) {
+        console.error('Failed to start daily game:', e);
+        gameMode = null;
+        showScreen('mode-screen');
+        showMessage('Kunne ikke starte spillet. Prøv igjen.', 'error');
       }
-      fetchPlayers();
-      setInterval(fetchPlayers, 3000);
     });
   });
 
@@ -676,11 +692,18 @@ function setupModeScreen() {
     showScreen(null); // hide mode screen immediately
     showMessage('Laster…', '');
     onIdentityReady(async () => {
-      gameMode = 'challenge';
-      document.getElementById('players-sidebar').classList.add('hidden');
-      document.getElementById('challenge-indicator').classList.remove('hidden');
-      await initGame();
-      await joinChallengeLobby();
+      try {
+        gameMode = 'challenge';
+        document.getElementById('players-sidebar').classList.add('hidden');
+        document.getElementById('challenge-indicator').classList.remove('hidden');
+        await initGame();
+        await joinChallengeLobby();
+      } catch (e) {
+        console.error('Failed to start challenge:', e);
+        gameMode = null;
+        showScreen('mode-screen');
+        showMessage('Kunne ikke starte utfordring. Prøv igjen.', 'error');
+      }
     });
   });
 }
