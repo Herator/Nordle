@@ -86,10 +86,10 @@ async function restoreState(player, gameState, applyResultsInstant, showMessage)
 
 async function fetchPlayers(player) {
   try {
-    const url = player.guildId
-      ? `/api/players?guildId=${encodeURIComponent(player.guildId)}`
-      : '/api/players';
-    const res = await fetch(url);
+    const params = new URLSearchParams();
+    if (player.guildId) params.set('guildId', player.guildId);
+    if (player.channelId) params.set('channelId', player.channelId);
+    const res = await fetch(`/api/players?${params}`);
     renderPlayers(await res.json(), player.id);
   } catch {}
 }
