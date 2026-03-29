@@ -13,7 +13,6 @@ export async function startDailyMode(player, gameState, helpers) {
   await initGame();
   await restoreState(player, gameState, applyResultsInstant, showMessage);
 
-  document.getElementById('players-sidebar').classList.remove('hidden');
   document.getElementById('challenge-indicator').classList.add('hidden');
 
   if (!gameState.gameOver) {
@@ -22,8 +21,11 @@ export async function startDailyMode(player, gameState, helpers) {
     if (gameState.currentRow === 0) showMessage('Gjett ordet!', '');
   }
 
-  fetchPlayers(player);
-  setInterval(() => fetchPlayers(player), 3000);
+  if (player.channelId) {
+    document.getElementById('players-sidebar').classList.remove('hidden');
+    fetchPlayers(player);
+    setInterval(() => fetchPlayers(player), 3000);
+  }
 }
 
 // ---- Called after each submitted guess ----
