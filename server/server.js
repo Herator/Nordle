@@ -242,7 +242,7 @@ app.post("/api/join", (req, res) => {
   state.username = username || state.username;
   state.avatar = avatar || state.avatar;
   if (guildId) state.guildId = guildId;
-  if (channelId && !state.channelId) state.channelId = channelId;
+  if (channelId) state.channelId = channelId;
   res.json({ ok: true });
 });
 
@@ -264,7 +264,7 @@ app.post("/api/progress", async (req, res) => {
   state.username = username || state.username;
   state.avatar = avatar || state.avatar;
   if (guildId) state.guildId = guildId;
-  if (channelId && !state.channelId) state.channelId = channelId;
+  if (channelId) state.channelId = channelId;
 
   state.rows.push({ word, results });
   state.done = !!done;
