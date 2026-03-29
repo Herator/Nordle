@@ -212,14 +212,16 @@ app.post("/api/interactions", express.raw({ type: "*/*" }), async (req, res) => 
 app.use(express.json());
 
 // Get all players' today progress for a channel (words are NOT included)
+// Requires both guildId and channelId — web users (no call context) get nothing.
 app.get("/api/players", (req, res) => {
   const { guildId, channelId } = req.query;
+  if (!guildId || !channelId) { res.json([]); return; }
   const today = getTodayDate();
   const players = [];
   for (const [, state] of playerStates) {
     if (state.date !== today) continue;
-    if (guildId && state.guildId !== guildId) continue;
-    if (channelId && state.channelId !== channelId) continue;
+    if (state.guildId !== guildId) continue;
+    if (state.channelId !== channelId) continue;
     players.push({
       userId: state.userId,
       username: state.username,
