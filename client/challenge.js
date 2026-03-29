@@ -151,7 +151,7 @@ export function setupLobbyHandlers(player, gameState, helpers) {
       body: JSON.stringify(lobbyParams(player)),
     }).catch(() => {});
     currentLobby = null;
-    document.getElementById('players-sidebar').classList.remove('hidden');
+    document.getElementById('players-sidebar').classList.add('hidden');
     showScreen('mode-screen');
   });
 
@@ -203,7 +203,7 @@ export function setupLobbyHandlers(player, gameState, helpers) {
       body: JSON.stringify(lobbyParams(player)),
     }).catch(() => {});
     currentLobby = null;
-    document.getElementById('players-sidebar').classList.remove('hidden');
+    document.getElementById('players-sidebar').classList.add('hidden');
     showScreen('mode-screen');
   });
 }
