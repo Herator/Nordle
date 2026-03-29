@@ -601,10 +601,47 @@ body {
 
 .app-header {
   width: 100%;
-  text-align: center;
+  display: flex;
+  align-items: center;
   padding: 10px 0 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.45);
   flex-shrink: 0;
+}
+
+.app-header h1 {
+  flex: 1;
+  text-align: center;
+}
+
+.header-spacer {
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.switch-mode-btn {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  font-size: 1.1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.switch-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.55);
+  transform: translateY(-1px);
+}
+
+.switch-mode-btn:active {
+  transform: translateY(0);
 }
 
 h1 {

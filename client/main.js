@@ -1,57 +1,47 @@
 import { DiscordSDK } from "@discord/embedded-app-sdk";
-import { checkWord, isValidWord, getSecretWord } from "./script.js";
+import { isValidWord, checkWord, getSecretWord } from "./script.js";
 import { startDailyMode, reportProgress } from "./daily.js";
 import { startChallengeMode, setupLobbyHandlers } from "./challenge.js";
 import "./style.css";
 
-// ---- Player identity (populated after Discord auth) ----
-const player = { id: null, username: null, avatar: null, guildId: null, channelId: null };
+let auth;
+const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
 
-// ---- Shared game state ----
-const gameState = {
-  currentRow: 0,
-  gameOver: false,
-  mode: null,         // 'daily' | 'challenge'
-  onRoundDone: null,  // set by challenge.js when a round starts
-};
+async function setupDiscordSdk() {
+  await discordSdk.ready();
+  const { code } = await discordSdk.commands.authorize({
+    client_id: import.meta.env.VITE_DISCORD_CLIENT_ID,
+    response_type: "code",
+    state: "",
+    prompt: "none",
+    scope: ["identify", "guilds", "applications.commands"],
+  });
+  const response = await fetch("/api/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code }),
+  });
+  const { access_token } = await response.json();
+  auth = await discordSdk.commands.authenticate({ access_token });
+  if (auth == null) throw new Error("Authenticate command failed");
+}
 
-const MAX_ROWS = 6;
+// Game state
+const gameState = { currentRow: 0, gameOver: false, onRoundDone: null };
 
-// ---- UI utilities ----
+// Player identity (populated after Discord auth)
+const player = { id: null, username: null, avatar: null, channelId: null, guildId: null };
 
 function showMessage(text, type) {
   const msg = document.getElementById('message');
   msg.textContent = text;
   msg.className = type || '';
-  if (type === 'error') {
-    setTimeout(() => { msg.textContent = ''; msg.className = ''; }, 2000);
-  }
+  if (type === 'error') setTimeout(() => { msg.textContent = ''; msg.className = ''; }, 2000);
 }
 
-function showScreen(id) {
+function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-  if (id) document.getElementById(id).classList.remove('hidden');
-}
-
-// ---- Game grid ----
-
-function resetGrid() {
-  gameState.currentRow = 0;
-  gameState.gameOver = false;
-  document.querySelectorAll('input').forEach(i => {
-    i.value = '';
-    i.className = '';
-    i.disabled = true;
-  });
-  document.querySelectorAll('#row-0 input').forEach(i => { i.disabled = false; });
-  showMessage('Gjett ordet!', '');
-}
-
-function resetKeyboard() {
-  document.querySelectorAll('#keyboard button').forEach(btn => {
-    btn.className = (btn.dataset.key === 'Enter' || btn.dataset.key === 'Backspace')
-      ? 'key-wide' : '';
-  });
+  if (screenId) document.getElementById(screenId).classList.remove('hidden');
 }
 
 function getRowWord(row) {
@@ -73,7 +63,8 @@ function applyResults(row, results) {
       input.classList.add('flip');
       setTimeout(() => { input.classList.add(results[i]); input.disabled = true; }, 250);
     }, delay);
-    const keyBtn = document.querySelector(`#keyboard button[data-key="${word[i]}"]`);
+    const letter = word[i];
+    const keyBtn = document.querySelector(`#keyboard button[data-key="${letter}"]`);
     if (keyBtn) {
       setTimeout(() => {
         if (results[i] === 'correct') keyBtn.className = 'correct';
@@ -84,7 +75,7 @@ function applyResults(row, results) {
   });
 }
 
-export function applyResultsInstant(row, word, results) {
+function applyResultsInstant(row, word, results) {
   const inputs = document.querySelectorAll(`#row-${row} input`);
   inputs.forEach((input, i) => {
     input.value = word[i] || '';
@@ -92,7 +83,8 @@ export function applyResultsInstant(row, word, results) {
     input.disabled = true;
   });
   for (let i = 0; i < word.length; i++) {
-    const keyBtn = document.querySelector(`#keyboard button[data-key="${word[i]}"]`);
+    const letter = word[i];
+    const keyBtn = document.querySelector(`#keyboard button[data-key="${letter}"]`);
     if (keyBtn) {
       if (results[i] === 'correct') keyBtn.className = 'correct';
       else if (results[i] === 'present' && !keyBtn.classList.contains('correct')) keyBtn.className = 'present';
@@ -101,7 +93,26 @@ export function applyResultsInstant(row, word, results) {
   }
 }
 
-// ---- Submit guess ----
+function resetGrid() {
+  gameState.currentRow = 0;
+  gameState.gameOver = false;
+  gameState.onRoundDone = null;
+  document.querySelectorAll('.row input').forEach(input => {
+    input.value = '';
+    input.className = '';
+  });
+  document.querySelectorAll('#row-0 input').forEach(i => { i.disabled = false; });
+  for (let r = 1; r <= 5; r++) {
+    document.querySelectorAll(`#row-${r} input`).forEach(i => { i.disabled = true; });
+  }
+}
+
+function resetKeyboard() {
+  document.querySelectorAll('#keyboard button').forEach(btn => {
+    const isWide = btn.classList.contains('key-wide');
+    btn.className = isWide ? 'key-wide' : '';
+  });
+}
 
 function submitGuess() {
   if (gameState.gameOver) return;
@@ -109,14 +120,12 @@ function submitGuess() {
     showMessage('Fyll inn alle 5 bokstavene!', 'error');
     return;
   }
-
   const guess = getRowWord(gameState.currentRow);
-
   if (!isValidWord(guess)) {
     showMessage('Ikke et gyldig ord!', 'error');
-    const rowEl = document.getElementById(`row-${gameState.currentRow}`);
-    rowEl.classList.add('shake');
-    rowEl.addEventListener('animationend', () => rowEl.classList.remove('shake'), { once: true });
+    const row = document.getElementById(`row-${gameState.currentRow}`);
+    row.classList.add('shake');
+    row.addEventListener('animationend', () => row.classList.remove('shake'), { once: true });
     return;
   }
 
@@ -126,44 +135,40 @@ function submitGuess() {
   const revealTime = 5 * 300 + 300;
   const won = results.every(r => r === 'correct');
   const thisRow = gameState.currentRow;
-  const done = won || thisRow + 1 >= MAX_ROWS;
+  const done = won || thisRow + 1 >= 6;
 
-  if (gameState.mode === 'daily') {
+  if (gameState.onRoundDone) {
+    if (done) setTimeout(() => gameState.onRoundDone(thisRow + 1, won), revealTime);
+  } else {
     reportProgress(player, guess, results, done, won);
   }
 
   if (won) {
     setTimeout(() => {
-      const msgs = ['Fantastisk!', 'Imponerende!', 'Flott!', 'Bra!', 'Nesten!', 'Puh!'];
-      showMessage(msgs[thisRow] || 'Du vant!', 'win');
-      gameState.gameOver = true;
-      if (gameState.mode === 'challenge' && gameState.onRoundDone) {
-        gameState.onRoundDone(thisRow + 1, true);
+      if (!gameState.onRoundDone) {
+        const messages = ['Fantastisk!', 'Imponerende!', 'Flott!', 'Bra!', 'Nesten!', 'Puh!'];
+        showMessage(messages[thisRow] || 'Du vant!', 'win');
       }
+      gameState.gameOver = true;
     }, revealTime);
     return;
   }
 
   gameState.currentRow++;
-  if (gameState.currentRow >= MAX_ROWS) {
+  if (gameState.currentRow >= 6) {
     setTimeout(() => {
-      showMessage(`Ordet var: ${getSecretWord().toUpperCase()}`, 'lose');
+      if (!gameState.onRoundDone) showMessage(`Ordet var: ${getSecretWord().toUpperCase()}`, 'lose');
       gameState.gameOver = true;
-      if (gameState.mode === 'challenge' && gameState.onRoundDone) {
-        gameState.onRoundDone(MAX_ROWS, false);
-      }
     }, revealTime);
     return;
   }
 
   setTimeout(() => {
-    document.querySelectorAll(`#row-${gameState.currentRow} input`)
-      .forEach(i => { i.disabled = false; });
-    document.querySelector(`#row-${gameState.currentRow} input`).focus();
+    const nextInputs = document.querySelectorAll(`#row-${gameState.currentRow} input`);
+    nextInputs.forEach(i => { i.disabled = false; });
+    nextInputs[0].focus();
   }, revealTime);
 }
-
-// ---- Keyboard / input handling ----
 
 function handleKeyPress(key) {
   if (gameState.gameOver) return;
@@ -177,12 +182,13 @@ function handleKeyPress(key) {
   }
   if (/^[a-zæøå]$/i.test(key)) {
     const inputs = Array.from(document.querySelectorAll(`#row-${gameState.currentRow} input`));
-    const empty = inputs.find(i => i.value === '');
-    if (empty) {
-      empty.value = key.toLowerCase();
-      empty.classList.add('filled');
-      const next = inputs.find(i => i.value === '');
-      if (next) next.focus(); else empty.focus();
+    const emptyInput = inputs.find(i => i.value === '');
+    if (emptyInput) {
+      emptyInput.value = key.toLowerCase();
+      emptyInput.classList.add('filled');
+      const nextEmpty = inputs.find(i => i.value === '');
+      if (nextEmpty) nextEmpty.focus();
+      else emptyInput.focus();
     }
   }
 }
@@ -203,117 +209,66 @@ function setupInputHandlers() {
     input.addEventListener('focus', () => {
       const row = parseInt(input.dataset.row);
       if (row !== gameState.currentRow) {
-        const cur = Array.from(document.querySelectorAll(`#row-${gameState.currentRow} input`));
-        const first = cur.find(i => i.value === '');
-        if (first) first.focus(); else cur[cur.length - 1].focus();
+        const currentInputs = document.querySelectorAll(`#row-${gameState.currentRow} input`);
+        const firstEmpty = Array.from(currentInputs).find(i => i.value === '');
+        if (firstEmpty) firstEmpty.focus();
+        else currentInputs[currentInputs.length - 1].focus();
       }
     });
   });
 }
 
-// ---- Mode selection ----
-
 const helpers = {
-  resetGrid,
-  resetKeyboard,
   applyResultsInstant,
   showMessage,
   showScreen,
+  resetGrid,
+  resetKeyboard,
 };
 
-function setupModeScreen() {
-  document.getElementById('btn-daily').addEventListener('click', () => {
-    showScreen(null);
-    showMessage('Laster…', '');
-    onIdentityReady(() => {
-      gameState.mode = 'daily';
-      startDailyMode(player, gameState, helpers);
-    });
-  });
-
-  document.getElementById('btn-challenge').addEventListener('click', () => {
-    showScreen(null);
-    showMessage('Laster…', '');
-    document.getElementById('challenge-indicator').classList.remove('hidden');
-    onIdentityReady(() => {
-      gameState.mode = 'challenge';
-      document.getElementById('players-sidebar').classList.add('hidden');
-      startChallengeMode(player, gameState, helpers);
-    });
-  });
-}
-
-// ---- Discord auth ----
-
-let identityReady = false;
-const identityWaiters = [];
-
-function onIdentityReady(fn) {
-  if (identityReady) { fn(); return; }
-  identityWaiters.push(fn);
-}
-
-function resolveIdentity() {
-  identityReady = true;
-  identityWaiters.forEach(fn => fn());
-  identityWaiters.length = 0;
-}
-
-async function setupDiscordSdk() {
-  const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID;
-  if (!clientId) throw new Error('No Discord client ID');
-
-  const discordSdk = new DiscordSDK(clientId);
-  const timeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Discord SDK timeout')), 10000)
-  );
-  await Promise.race([discordSdk.ready(), timeout]);
-
-  const { code } = await discordSdk.commands.authorize({
-    client_id: clientId,
-    response_type: 'code',
-    state: '',
-    prompt: 'none',
-    scope: ['identify', 'guilds', 'applications.commands'],
-  });
-
-  const { access_token } = await fetch('/api/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code }),
-  }).then(r => r.json());
-
-  const auth = await discordSdk.commands.authenticate({ access_token });
-  if (!auth) throw new Error('Auth failed');
-
-  player.id = auth.user.id;
-  player.username = auth.user.username;
-  player.avatar = auth.user.avatar;
-  try { player.channelId = discordSdk.channelId; } catch {}
-  try { player.guildId = discordSdk.guildId; } catch {}
-}
-
-// ---- Boot ----
-
 async function start() {
-  // Wire up UI immediately — buttons work before auth completes
-  setupInputHandlers();
-  setupModeScreen();
-  setupLobbyHandlers(player, gameState, helpers);
-
-  document.getElementById('players-sidebar').classList.add('hidden');
-  showScreen('mode-screen');
-
-  // Auth in background
   try {
     await setupDiscordSdk();
+    player.id = auth.user.id;
+    player.username = auth.user.username;
+    player.avatar = auth.user.avatar;
+    try { player.channelId = discordSdk.channelId; } catch {}
+    try { player.guildId = discordSdk.guildId; } catch {}
   } catch (e) {
-    console.log('Discord auth failed, using fallback identity:', e.message);
-    player.id = 'local-' + Math.random().toString(36).slice(2, 8);
-    player.username = 'TestSpiller';
+    console.log("Discord SDK setup failed (running outside Discord?):", e.message);
   }
 
-  resolveIdentity();
+  setupInputHandlers();
+  setupLobbyHandlers(player, gameState, helpers);
+
+  document.getElementById('btn-daily').addEventListener('click', async () => {
+    resetGrid();
+    resetKeyboard();
+    showMessage('', '');
+    showScreen(null);
+    document.getElementById('challenge-indicator').classList.add('hidden');
+    await startDailyMode(player, gameState, helpers);
+  });
+
+  document.getElementById('btn-challenge').addEventListener('click', async () => {
+    resetGrid();
+    resetKeyboard();
+    showMessage('', '');
+    document.getElementById('players-sidebar').classList.add('hidden');
+    document.getElementById('challenge-indicator').classList.add('hidden');
+    await startChallengeMode(player, gameState, helpers);
+  });
+
+  document.getElementById('btn-switch-mode').addEventListener('click', () => {
+    resetGrid();
+    resetKeyboard();
+    showMessage('', '');
+    document.getElementById('players-sidebar').classList.add('hidden');
+    document.getElementById('challenge-indicator').classList.add('hidden');
+    showScreen('mode-screen');
+  });
+
+  showScreen('mode-screen');
 }
 
 start();
