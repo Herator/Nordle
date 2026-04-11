@@ -638,6 +638,7 @@ barka
 barke
 barkø
 barna
+barne
 baron
 barre
 barsk
@@ -968,6 +969,7 @@ bjørn
 black
 blada
 bladd
+blade
 blaff
 blafr
 blaga
@@ -1789,6 +1791,7 @@ danne
 dansa
 danse
 dansk
+danst
 dapen
 daper
 darcy
@@ -3466,6 +3469,8 @@ fugen
 fuger
 fuges
 fuget
+fugla
+fugle
 fugue
 fuksa
 fukse
@@ -4320,6 +4325,7 @@ gutsa
 gutse
 gutsy
 gutta
+gutte
 gutua
 guyot
 gyden
@@ -4676,6 +4682,7 @@ hesne
 hespa
 hespe
 hespl
+hesta
 heste
 heten
 heter
@@ -5006,6 +5013,7 @@ hvine
 hvint
 hvisk
 hviss
+hvita
 hvite
 hvitn
 hvitt
@@ -5646,6 +5654,7 @@ kader
 kadre
 kaene
 kaffe
+kaffi
 kafir
 kagen
 kager
@@ -10053,6 +10062,7 @@ romen
 romer
 romma
 romme
+rompe
 romsk
 ronde
 rondo
@@ -12012,6 +12022,7 @@ summe
 sunda
 sunde
 sundt
+sunge
 sunna
 sunne
 sunni
